@@ -17,6 +17,28 @@ Because every creator should have an easy, direct way to share premium content w
 - 🔥 Allow creators to share unlockable content with their community
 - 🎉 Allow create a QR code to enable the use of membership/ticket NFTs in physical spaces
 
+
+<p align="center">
+  <img src="docs/mintships_a1.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
+</p>
+
+<p align="center">
+  <img src="docs/mintships_a2.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
+</p>
+
+<p align="center">
+  <img src="docs/mintships_a2_1.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
+</p>
+
+<p align="center">
+  <img src="docs/mintships_a3.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
+</p>
+
+<p align="center">
+  <img src="docs/mintships_a5.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
+</p>
+
+
 ## Requirements
 
 - Node.js 14+, Npm and Metamask
