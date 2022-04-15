@@ -40,7 +40,7 @@ const Auth = (props: IAuthProps) => {
     };
     setRandomBg(randBg());
   }, []);
-  console.log(randomBg);
+  // console.log(randomBg);
   return (
     <Fragment>
       {props.meta}

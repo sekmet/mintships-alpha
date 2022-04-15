@@ -20,14 +20,14 @@ export const injected = new InjectedConnector({
   ],
 });
 
-export default function Login(props: any) {
+export default function Login() {
   const { activateBrowserWallet, account, activate } = useEthers();
   const router = useRouter();
-  const { providers } = props;
+  // const { providers } = props;
 
   function handleConnectWallet() {
     activateBrowserWallet();
-    console.log(account, providers);
+    // console.log(account, providers);
   }
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function Login(props: any) {
       // const currAccount = accounts[0];
       const { query }: any = router;
       // do something with new account here
-      console.log('Account ==> ', account);
+      // console.log('Account ==> ', account);
       // const chainId = window.ethereum.networkVersion;
       if (account) {
         await signIn('credentials', {

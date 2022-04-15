@@ -12,7 +12,7 @@ declare let window: any;
 // declare supportated chains
 export const injected = new InjectedConnector({
   supportedChainIds: [
-    1, 3, 4, 5, 42, 56, 69, 250, 1337, 80001, 43114, 1666600000, 1666700000,
+    1, 3, 4, 5, 28, 42, 56, 69, 250, 1337, 80001, 43114, 1666600000, 1666700000,
     1313161554, 1313161555,
   ],
 });

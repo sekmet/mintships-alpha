@@ -14,6 +14,9 @@ import { Meta } from '@/layouts/Meta';
 import { graphqlClient as apolloClient } from '@/services/apolloClient';
 import { classNames } from '@/utils';
 
+/* eslint-disable-next-line unused-imports/no-unused-vars */
+declare let window: any;
+
 const lockingTypes = [
   {
     id: 1,
@@ -82,7 +85,7 @@ const Index = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     const lockData: any = {};
     lockData.lockType = selectedLockingTypes.id;
     lockData.chainId = chainId || '80001';
@@ -91,17 +94,17 @@ const Index = () => {
     lockData.userId = account;
     lockData.status = 1;
     const mergedItem = Object.assign(data, lockData);
-    console.log({ ...mergedItem });
+    // console.log({ ...mergedItem });
 
     const createLockedResult = await createLockedContent({
       ...mergedItem,
     });
-    console.log(data);
+    console.log(createLockedResult);
   };
   console.log(errors);
 
   useEffect(() => {
-    console.log(thumbnailUrl);
+    // console.log(thumbnailUrl);
   }, [thumbnailUrl]);
 
   return (

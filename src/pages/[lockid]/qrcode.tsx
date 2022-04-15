@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import { Interface } from '@ethersproject/abi';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { Web3Provider } from '@ethersproject/providers';
 import QRCodeStyling from '@solana/qr-code-styling';
-import { useEtherBalance, useEthers } from '@usedappify/core';
+import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -15,6 +15,8 @@ import { Lock } from '@/layouts/Lock';
 import { Meta } from '@/layouts/Meta';
 import erc721abi from '@/lib/abis/erc721.json';
 import { signText, ipfsToUri } from '@/utils/network';
+
+declare let window: any;
 
 const qrCode = new QRCodeStyling({
   width: 269,
@@ -34,7 +36,7 @@ const qrCode = new QRCodeStyling({
 // declare supportated chains
 export const injected = new InjectedConnector({
   supportedChainIds: [
-    1, 3, 4, 5, 42, 56, 69, 250, 1337, 80001, 43114, 1666600000, 1666700000,
+    1, 3, 4, 5, 28, 42, 56, 69, 250, 1337, 80001, 43114, 1666600000, 1666700000,
     1313161554, 1313161555,
   ],
 });
@@ -46,11 +48,11 @@ const LockPage = (props: any) => {
   const [signature, setSignature] = useState<string | boolean>(false);
   // const [fileExt, setFileExt] = useState("png");
   const ref = useRef<any>();
-  const { activateBrowserWallet, account, activate } = useEthers();
-  const etherBalance = useEtherBalance(account);
+  const { activateBrowserWallet, account } = useEthers();
+  // const etherBalance = useEtherBalance(account);
   // const [chainId, setChainid] = useState<any>();
   // const router = useRouter();
-  const { lockid, data, loading } = props;
+  const { data, loading } = props;
 
   const abi = new Interface(erc721abi);
   // This can be an address or an ENS name
@@ -71,10 +73,10 @@ const LockPage = (props: any) => {
     if (result) {
       if (address && abi && provider) {
         erc721 = new Contract(address, abi, provider);
-        erc721.currentTokenId().then(function (result: any) {
-          console.log('Token ID ===> ', result);
-          if (result) {
-            const resultPlus = BigNumber.from(result).toNumber() + 1;
+        erc721.currentTokenId().then(function (resultToken: any) {
+          // console.log('Token ID ===> ', resultToken);
+          if (resultToken) {
+            const resultPlus = BigNumber.from(resultToken).toNumber() + 1;
             console.log('Token ID dec + 1 ===> ', resultPlus);
           }
         });
@@ -84,7 +86,7 @@ const LockPage = (props: any) => {
         // console.log('Token Balance: ', tokenBalance);
         if (tokenBalance) {
           const tokenBalanceDec = BigNumber.from(tokenBalance).toNumber();
-          console.log('Token Balance: ===> ', tokenBalanceDec);
+          // console.log('Token Balance: ===> ', tokenBalanceDec);
           if (!tokenBalanceDec) {
             Alert(
               'error',
@@ -98,7 +100,7 @@ const LockPage = (props: any) => {
 
       setSignature(result);
     }
-    console.log(result);
+    // console.log(result);
 
     setContent(
       JSON.stringify({
@@ -108,13 +110,13 @@ const LockPage = (props: any) => {
       })
     );
 
-    console.log(
+    /* console.log(
       JSON.stringify({
         id: 'm7NptX6T_euPIrt_KwwjgBmiOW-07tScgfW43wMceb0:mintships.mintspace2.testnet',
         did: `did:eth:${account}`,
         result,
       })
-    );
+    ); */
 
     return result;
   };
@@ -131,7 +133,7 @@ const LockPage = (props: any) => {
     if (data && !loading) {
       setLock(data?.api_locks[0]);
       qrCode.update({
-        data: content && String(content),
+        data: String(content),
       });
     }
   }, [data, loading, content]);

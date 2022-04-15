@@ -107,7 +107,10 @@ export function initializeApollo(initialState = null, graphUri?: string) {
   return currentApolloClient;
 }
 
-export const graphqlClient = initializeApollo(GRAPH_TESTNET_HTTPS_URI);
+export const graphqlClient = initializeApollo(
+  null,
+  String(GRAPH_TESTNET_HTTPS_URI)
+);
 
 export const useApollo = (pageProps: any) => {
   const state = pageProps[APOLLO_STATE_PROP_NAME];

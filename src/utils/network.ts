@@ -3,6 +3,14 @@ import {
   TypedDataField,
 } from '@ethersproject/abstract-signer';
 import { ethers, utils } from 'ethers';
+// @ts-ignore
+import omitDeep from 'omit-deep';
+
+declare let window: any;
+
+export const omit = (object: any, name: string) => {
+  return omitDeep(object, name);
+};
 
 export const getSigner = async () => {
   const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
@@ -19,6 +27,8 @@ export const signedTypeData = async (
 ) => {
   const signer = await getSigner();
   // remove the __typedname from the signature!
+
+  /* eslint-disable-next-line  no-underscore-dangle */
   return signer._signTypedData(
     omit(domain, '__typename'),
     omit(types, '__typename'),

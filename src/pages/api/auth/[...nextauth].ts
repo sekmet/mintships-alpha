@@ -28,7 +28,7 @@ export default NextAuth({
 
         // return user info
         // return { ...metadata };
-        console.log('authorize', req);
+        // console.log('authorize', req);
         return { ...req };
       },
     }),
@@ -133,7 +133,7 @@ export default NextAuth({
     // async signIn({ user, account, profile, email, credentials }) { return true },
     // async redirect({ url, baseUrl }) { return baseUrl },
     async session({ session, user, token }): Promise<any> {
-      console.log('session', session, token, user);
+      // console.log('session', session, token, user);
       return { session, user, token };
     },
     // async jwt({ token, user, account, profile, isNewUser }) { return token }

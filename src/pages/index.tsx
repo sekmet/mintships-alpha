@@ -102,7 +102,7 @@ const Index = () => {
       meta={
         <Meta
           title="Next.js Boilerplate Presentation"
-          description={`Submarines/Mintships for ${account}`}
+          description={`Mintships for ${account}`}
         />
       }
     >
@@ -111,7 +111,7 @@ const Index = () => {
           <div className="sm:flex-auto">
             <h1 className="text-xl font-semibold text-gray-900">Mintships</h1>
             <p className="mt-2 text-sm text-gray-700">
-              Submarines/Mintships for {account}
+              Mintships for {account}
             </p>
           </div>
           <div className="mt-4 sm:flex-none sm:mt-0 sm:ml-16">
@@ -165,7 +165,7 @@ const Index = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {locks?.map((lock) => (
+              {locks?.map((lock: any) => (
                 <tr key={lock.id}>
                   <td className="py-4 pr-3 pl-4 w-full max-w-0 text-sm font-medium text-gray-900 sm:pl-6 sm:w-auto sm:max-w-none">
                     <Link href={`/lock-details/${lock.id}`}>

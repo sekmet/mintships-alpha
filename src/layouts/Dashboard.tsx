@@ -11,7 +11,7 @@ type IAuthProps = {
 };
 
 const AuthApp = (props: IAuthProps) => {
-  const { data, status }: any = useSession({ required: true });
+  const { data }: any = useSession({ required: true });
   const isUser = !!data?.session?.user;
 
   if (isUser) {
@@ -20,7 +20,7 @@ const AuthApp = (props: IAuthProps) => {
 
   // Session is being fetched, or no user.
   // If no user, useEffect() will redirect.
-  console.log(data, status);
+  // console.log(data, status);
   return <div>Loading...</div>;
 };
 
