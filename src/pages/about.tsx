@@ -1,12 +1,15 @@
 import { useEffect, useState, Fragment } from 'react';
 
 import { useEthers, useBlockMeta, useBlockNumber } from '@usedappify/core';
+import { useRouter } from 'next/router';
 
 import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
 
+declare let window: any;
+
 const Index = () => {
-  // const router = useRouter();
+  const router = useRouter();
   const [blockNumber, setBlockNumber] = useState<number | undefined>(0);
   const { account } = useEthers();
   const { timestamp } = useBlockMeta();
@@ -14,6 +17,9 @@ const Index = () => {
 
   useEffect(() => {
     setBlockNumber(blocknumber);
+    window.ethereum.on('accountsChanged', function () {
+      router.reload();
+    });
   }, [blocknumber]);
 
   return (

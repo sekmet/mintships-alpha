@@ -6,6 +6,7 @@ import { CheckCircleIcon } from '@heroicons/react/solid';
 import { ImageUpload } from '@sekmet/react-ipfs-uploader';
 import { useEthers } from '@usedappify/core';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 
 import NetworkDropdown from '@/components/Dropdowns/NetworkDropdown';
@@ -71,7 +72,7 @@ const createLockedContent = (lockRequest: {
 };
 
 const Index = () => {
-  // const router = useRouter();
+  const router = useRouter();
   const { account } = useEthers();
   const [selectedLockingTypes, setSelectedLockingTypes] = useState<any>(
     lockingTypes[0]
@@ -105,12 +106,20 @@ const Index = () => {
 
   useEffect(() => {
     // console.log(thumbnailUrl);
+    window.ethereum.on('accountsChanged', function () {
+      router.reload();
+    });
   }, [thumbnailUrl]);
 
   return (
     <Dashboard
       auth={true}
-      meta={<Meta title="Mintships Alpha" description="Submarines/Mintships" />}
+      meta={
+        <Meta
+          title="Mintships Alpha"
+          description="Enable the use of membership/ticket NFTs in physical spaces and allow sharing unlockable content possible and easy for all creators."
+        />
+      }
     >
       <div className="flex relative flex-col mb-6 w-full min-w-0 break-words bg-gray-100 rounded-lg border-0 shadow-lg">
         <div className="p-6 mb-0 bg-white rounded-t">

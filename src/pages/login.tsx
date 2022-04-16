@@ -60,7 +60,9 @@ export default function Login() {
   }, [account]);
 
   return (
-    <Auth meta={<Meta title="BOBA Nftify Login" description="BOBA Nftify" />}>
+    <Auth
+      meta={<Meta title="Mintships Alpha" description="Submarines/Mintships" />}
+    >
       <div className="flex flex-col justify-center py-12 min-h-full sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h1 className="mt-3 text-4xl font-extrabold text-center text-gray-900 opacity-50">

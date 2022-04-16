@@ -6,10 +6,13 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Base64 } from 'js-base64';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
 import { ellipsisAddressUrl } from '@/utils';
+
+declare let window: any;
 
 dayjs.extend(relativeTime);
 
@@ -51,7 +54,7 @@ const EXPLORE_LOCKS = gql`
 `;
 
 const Index = () => {
-  // const router = useRouter();
+  const router = useRouter();
   const [locks, setLocks] = useState<any>();
   const { account } = useEthers();
   const [getLocksData, { data, loading }] = useLazyQuery(EXPLORE_LOCKS);
@@ -94,6 +97,10 @@ const Index = () => {
     if (data && !loading) {
       setLocks(data?.api_locks);
     }
+
+    window.ethereum.on('accountsChanged', function () {
+      router.reload();
+    });
   }, [data, loading]);
 
   return (
@@ -101,8 +108,8 @@ const Index = () => {
       auth={true}
       meta={
         <Meta
-          title="Next.js Boilerplate Presentation"
-          description={`Mintships for ${account}`}
+          title="Mintships Alpha"
+          description="Enable the use of membership/ticket NFTs in physical spaces and allow sharing unlockable content possible and easy for all creators."
         />
       }
     >

@@ -6,6 +6,7 @@ import { CheckCircleIcon } from '@heroicons/react/solid';
 import { ImageUpload } from '@sekmet/react-ipfs-uploader';
 import { useEthers } from '@usedappify/core';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 
 import NetworkDropdown from '@/components/Dropdowns/NetworkDropdown';
@@ -13,6 +14,8 @@ import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
 import { graphqlClient as apolloClient } from '@/services/apolloClient';
 import { classNames } from '@/utils';
+
+declare let window: any;
 
 const lockingTypes = [
   {
@@ -68,7 +71,7 @@ const createLockedContent = (lockRequest: {
 };
 
 const Index = () => {
-  // const router = useRouter();
+  const router = useRouter();
   const { account } = useEthers();
   const [selectedLockingTypes, setSelectedLockingTypes] = useState<any>(
     lockingTypes[0]
@@ -110,6 +113,9 @@ const Index = () => {
 
   useEffect(() => {
     // console.log(thumbnailUrl);
+    window.ethereum.on('accountsChanged', function () {
+      router.reload();
+    });
   }, [thumbnailUrl]);
 
   return (
