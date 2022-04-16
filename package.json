@@ -30,7 +30,7 @@
     "@metamask/detect-provider": "^1.2.0",
     "@metamask/onboarding": "^1.0.1",
     "@sekmet/jazzicon": "^2.0.1",
-    "@sekmet/react-ipfs-uploader": "^1.3.26",
+    "@sekmet/react-ipfs-uploader": "^1.3.27",
     "@solana/qr-code-styling": "^1.6.0-beta.0",
     "@usedappify/core": "0.11.29",
     "@web3-react/core": "^6.1.9",

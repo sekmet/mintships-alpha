@@ -60,3 +60,12 @@ export const ipfsToUri = (ipfs: string) => {
   const ipfsID = `${ipfs}`.replace(ipfsPrefix, '');
   return `https://cloudflare-ipfs.com/ipfs/${ipfsID}`;
 };
+
+export const ipfsInfuraToCloudflareUri = (ipfs: string) => {
+  const ipfsPrefix = 'https://ipfs.infura.io/ipfs/';
+  if (!ipfs.startsWith(ipfsPrefix)) {
+    return ipfs;
+  }
+  const ipfsID = `${ipfs}`.replace(ipfsPrefix, '');
+  return `https://cloudflare-ipfs.com/ipfs/${ipfsID}`;
+};

@@ -14,7 +14,7 @@ import Identicon from '@/components/Wallet/Identicon';
 import { Lock } from '@/layouts/Lock';
 import { Meta } from '@/layouts/Meta';
 import erc721abi from '@/lib/abis/erc721.json';
-import { signText, ipfsToUri } from '@/utils/network';
+import { signText } from '@/utils/network';
 
 declare let window: any;
 
@@ -151,11 +151,13 @@ const LockPage = (props: any) => {
                       <div className="flex justify-center px-4 w-full lg:order-2 lg:w-3/12">
                         <div className="relative">
                           {lock?.thumbnailUrl ? (
-                            <img
-                              alt={lock?.name}
-                              src={ipfsToUri(lock?.thumbnailUrl)}
-                              className="absolute -m-16 -ml-20 h-auto align-middle rounded-full border-none shadow-xl lg:-ml-16 max-w-150-px"
-                            />
+                            <span className="absolute justify-center -m-16 -ml-20 h-auto align-middle rounded-full border-none shadow-xl lg:-ml-16 max-w-150-px">
+                              <img
+                                alt={lock?.name}
+                                src={lock?.thumbnailUrl}
+                                className="rounded-full"
+                              />
+                            </span>
                           ) : (
                             <span className="absolute -m-16 -ml-20 h-auto align-middle rounded-full border-none shadow-xl lg:-ml-16 max-w-150-px">
                               <Identicon

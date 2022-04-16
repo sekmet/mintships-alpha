@@ -13,7 +13,7 @@ import Identicon from '@/components/Wallet/Identicon';
 import { Lock } from '@/layouts/Lock';
 import { Meta } from '@/layouts/Meta';
 import erc721abi from '@/lib/abis/erc721.json';
-import { signText, ipfsToUri } from '@/utils/network';
+import { signText, ipfsInfuraToCloudflareUri } from '@/utils/network';
 
 // declare supportated chains
 export const injected = new InjectedConnector({
@@ -136,7 +136,9 @@ const LockPage = (props: any) => {
                           {lock?.thumbnailUrl ? (
                             <img
                               alt={lock?.name}
-                              src={ipfsToUri(lock?.thumbnailUrl)}
+                              src={ipfsInfuraToCloudflareUri(
+                                lock?.thumbnailUrl
+                              )}
                               className="absolute -m-16 -ml-20 h-auto align-middle rounded-full border-none shadow-xl lg:-ml-16 max-w-150-px"
                             />
                           ) : (

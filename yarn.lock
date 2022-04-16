@@ -1143,10 +1143,10 @@
     color "^3.1.3"
     mersenne-twister "^1.1.0"
 
-"@sekmet/react-ipfs-uploader@^1.3.26":
-  version "1.3.26"
-  resolved "https://registry.yarnpkg.com/@sekmet/react-ipfs-uploader/-/react-ipfs-uploader-1.3.26.tgz#4229b3e581ec99a1e28e24d218aae2014f62cfbc"
-  integrity sha512-S4ycQmOTLRyoEQpfgVke5P6BpW/QYlco8yf+HmNlp3NIG63eb9aMCr1WgyjvH+OLhyyi4uLbVXThcqx51VFKEQ==
+"@sekmet/react-ipfs-uploader@^1.3.27":
+  version "1.3.27"
+  resolved "https://registry.yarnpkg.com/@sekmet/react-ipfs-uploader/-/react-ipfs-uploader-1.3.27.tgz#e42b5003ad545356f501c4b01e2b9ade4ce980d7"
+  integrity sha512-DEv6F7BOPtsTdESy2X+LJTeJv98tAj3hliuXFflJ2Ux7K0hYM733fDBUzIKkYZEFyD0O+OyMRoET+n30nfCZyQ==
   dependencies:
     i "^0.3.7"
     ipfs-http-client "^54.0.1"
