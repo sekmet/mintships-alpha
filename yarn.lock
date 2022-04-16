@@ -1410,10 +1410,10 @@
   resolved "https://registry.yarnpkg.com/@uniswap/token-lists/-/token-lists-1.0.0-beta.28.tgz#76bb6ec25e76ae6bece9efc11b9b68079b2b9402"
   integrity sha512-MmVeoOd/HlZYOn5NT2mlDoOUYjnZb+3V7aCD5/YwSgsqeDRXZmKfKHafEEhiZoMvXuZdqSBg4L/ythvzAf9cwA==
 
-"@usedappify/core@0.11.29":
-  version "0.11.29"
-  resolved "https://registry.yarnpkg.com/@usedappify/core/-/core-0.11.29.tgz#e9f2b1f4963d53427baf6b0ae8d1bfe50534619f"
-  integrity sha512-u8n3eHOjuRBbUe4yp5VU7/CI5OdiylylnS+6otBcSs2dmODeGgLBBFIsyD2GUAK2EnvhwLZiLe1biTZPQdCeCw==
+"@usedappify/core@^0.11.30":
+  version "0.11.30"
+  resolved "https://registry.yarnpkg.com/@usedappify/core/-/core-0.11.30.tgz#c756b931735d3f848d792b65f74f705e0c4100f5"
+  integrity sha512-XPGvWSrTmJtKzOlrAhrflfWO2t3VZtQPmPDtgntKu5CHXu5ptUh7RnhNnvQEV00YmA+cSjtf2vh8Y0c2OtGkXg==
   dependencies:
     "@metamask/detect-provider" "^1.2.0"
     "@testing-library/react-hooks" "^7.0.2"

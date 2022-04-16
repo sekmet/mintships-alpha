@@ -93,6 +93,7 @@ const LockPage = (props: any) => {
                 'Permission Denied',
                 'You do not own this NFT in this account address you are connected, please try again using another address.'
               );
+              setUnlocking(false);
               return false;
             }
 

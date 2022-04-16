@@ -26,6 +26,7 @@ export default function ConnectButton({
   const etherBalance = useEtherBalance(account);
   // const [chainId, setChainid] = useState<any>();
   // const router = useRouter();
+  const allowedChainIds = [1, 3, 4, 5, 42, 1337, 80001];
 
   function handleConnectWallet() {
     activateBrowserWallet();
@@ -53,6 +54,24 @@ export default function ConnectButton({
     window.ethereum.on('accountsChanged', function () {
       getAccount();
     });
+
+    // console.log('allowedChainIds.includes(window.ethereum.networkVersion) ', window.ethereum.networkVersion, allowedChainIds.includes(parseInt(window.ethereum.networkVersion,10)) )
+
+    /* eslint-disable no-underscore-dangle */
+    if (
+      window?.ethereum &&
+      !allowedChainIds.includes(parseInt(window.ethereum.networkVersion, 10))
+    ) {
+      // If not connected to allowed networks, request network switch
+      try {
+        (async () =>
+          window.ethereum.send('wallet_switchEthereumChain', [
+            { chainId: '0x13881' },
+          ]))();
+      } catch (error) {
+        console.log(error);
+      }
+    }
 
     if (account && account !== 'undefined') activate(injected);
     // console.log(account,injected)
