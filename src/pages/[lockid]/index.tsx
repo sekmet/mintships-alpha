@@ -20,10 +20,8 @@ const CURRENT_LOCK = gql`
       thumbnailUrl
       contractAddress
       tokenId
-      cid
       contentMimeType
       lockType
-      secretKey
       chainId
       network
       userId

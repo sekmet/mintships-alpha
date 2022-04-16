@@ -22,7 +22,7 @@ const qrCode = new QRCodeStyling({
   width: 269,
   height: 269,
   image:
-    'https://ydpggwstj6eqtqgvuseepwcxiqqlsiwchowen3as7ufpbj55vi.arweave.net/wN5jWlNPiQnA1aSIR9hX_RCC5IsI7rEbsEv0K8Ke9qk',
+    'https://bafkreieckfp63j3mfzk3ar45e33rzbydzcrqtcuvinw42zhxjw646svjkq.ipfs.nftstorage.link/',
   dotsOptions: {
     color: '#000000',
     type: 'rounded',
@@ -46,6 +46,7 @@ const LockPage = (props: any) => {
   const [provider, setProvider] = useState<any>();
   const [content, setContent] = useState<string | boolean>(false);
   const [signature, setSignature] = useState<string | boolean>(false);
+  const [unlocking, setUnlocking] = useState<boolean>(false);
   // const [fileExt, setFileExt] = useState("png");
   const ref = useRef<any>();
   const { activateBrowserWallet, account } = useEthers();
@@ -68,49 +69,51 @@ const LockPage = (props: any) => {
 
   const signMessage = async (message: string) => {
     let erc721: any = {};
+    setUnlocking(true);
+    try {
+      const result = await signText(message);
+      if (result) {
+        if (address && abi && provider) {
+          erc721 = new Contract(address, abi, provider);
+          erc721.currentTokenId().then(function (resultToken: any) {
+            // console.log('Token ID ===> ', resultToken);
+            if (resultToken) {
+              const resultPlus = BigNumber.from(resultToken).toNumber() + 1;
+              console.log('Token ID dec + 1 ===> ', resultPlus);
+            }
+          });
 
-    const result = await signText(message);
-    if (result) {
-      if (address && abi && provider) {
-        erc721 = new Contract(address, abi, provider);
-        erc721.currentTokenId().then(function (resultToken: any) {
-          // console.log('Token ID ===> ', resultToken);
-          if (resultToken) {
-            const resultPlus = BigNumber.from(resultToken).toNumber() + 1;
-            console.log('Token ID dec + 1 ===> ', resultPlus);
-          }
-        });
-
-        // Get the token balance
-        const tokenBalance = await erc721.balanceOf(account);
-        // console.log('Token Balance: ', tokenBalance);
-        if (tokenBalance) {
-          const tokenBalanceDec = BigNumber.from(tokenBalance).toNumber();
-          // console.log('Token Balance: ===> ', tokenBalanceDec);
-          if (!tokenBalanceDec) {
-            Alert(
-              'error',
-              'Permission Denied',
-              'You do not own this NFT in this account address you are connected, please try again using another address.'
-            );
-            return false;
+          // Get the token balance
+          const tokenBalance = await erc721.balanceOf(account);
+          // console.log('Token Balance: ', tokenBalance);
+          if (tokenBalance) {
+            const tokenBalanceDec = BigNumber.from(tokenBalance).toNumber();
+            // console.log('Token Balance: ===> ', tokenBalanceDec);
+            if (!tokenBalanceDec) {
+              Alert(
+                'error',
+                'Permission Denied',
+                'You do not own this NFT in this account address you are connected, please try again using another address.'
+              );
+              setUnlocking(false);
+              return false;
+            }
           }
         }
+
+        setSignature(result);
       }
+      // console.log(result);
 
-      setSignature(result);
-    }
-    // console.log(result);
+      setContent(
+        JSON.stringify({
+          id: 'm7NptX6T_euPIrt_KwwjgBmiOW-07tScgfW43wMceb0:mintships.mintspace2.testnet',
+          did: `did:eth:${account}`,
+          result,
+        })
+      );
 
-    setContent(
-      JSON.stringify({
-        id: 'm7NptX6T_euPIrt_KwwjgBmiOW-07tScgfW43wMceb0:mintships.mintspace2.testnet',
-        did: `did:eth:${account}`,
-        result,
-      })
-    );
-
-    /* console.log(
+      /* console.log(
       JSON.stringify({
         id: 'm7NptX6T_euPIrt_KwwjgBmiOW-07tScgfW43wMceb0:mintships.mintspace2.testnet',
         did: `did:eth:${account}`,
@@ -118,7 +121,13 @@ const LockPage = (props: any) => {
       })
     ); */
 
-    return result;
+      return result;
+    } catch (error) {
+      console.log(error);
+      setUnlocking(false);
+    }
+
+    return false;
   };
 
   useEffect(() => {
@@ -173,10 +182,10 @@ const LockPage = (props: any) => {
                       <h3 className="mb-2 text-3xl antialiased font-bold leading-normal first:text-gray-700 lg:text-4xl">
                         {lock?.name}
                       </h3>
-                      <div className="mt-0 mb-2 text-sm font-bold leading-normal uppercase text-blueGray-400">
+                      {/* <div className="mt-0 mb-2 text-sm font-bold leading-normal uppercase text-blueGray-400">
                         <i className="mr-2 text-lg fas fa-map-marker-alt text-blueGray-400"></i>{' '}
                         Blockchain, Internet
-                      </div>
+                        </div> */}
                     </div>
                     <div className="py-5 mt-5 text-center border-t border-gray-200">
                       <div className="flex flex-wrap justify-center">
@@ -203,14 +212,55 @@ const LockPage = (props: any) => {
                               <strong className="text-xs">{account}</strong>
                             </span>
                           </div>
+                          {!signature && !unlocking && (
+                            <div className="py-6 px-3 mt-0">
+                              <button
+                                className="py-2 px-12 mb-1 font-bold text-white uppercase bg-red-400 active:bg-red-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
+                                type="button"
+                                onClick={() => signMessage(messageToSign)}
+                              >
+                                Sign to Unlock
+                              </button>
+                            </div>
+                          )}
+
+                          {!signature && unlocking && (
+                            <div className="py-6 px-3 mt-0">
+                              <button
+                                className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-red-400 active:bg-red-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out cursor-not-allowed sm:mr-2 sm:text-xl text-md"
+                                type="button"
+                                disabled={true}
+                              >
+                                <svg
+                                  className="mr-3 -ml-1 w-5 h-5 text-white animate-spin"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx={12}
+                                    cy={12}
+                                    r={10}
+                                    stroke="currentColor"
+                                    strokeWidth={4}
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  />
+                                </svg>
+                                Unlocking...
+                              </button>
+                            </div>
+                          )}
+
                           {!signature && (
-                            <button
-                              className="py-2 px-12 mb-1 font-bold text-white uppercase bg-red-400 active:bg-red-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
-                              type="button"
-                              onClick={() => signMessage(messageToSign)}
-                            >
-                              Sign to Unlock
-                            </button>
+                            <p className="mb-4 text-sm leading-relaxed text-gray-500 sm:text-md">
+                              * Unlock this QR-code by connecting your wallet to
+                              verify you have required nft.
+                            </p>
                           )}
                         </div>
                       )}
@@ -233,7 +283,7 @@ const LockPage = (props: any) => {
                               {account ? 'Disconnect' : 'Connect Wallet'}
                             </button>
                           </div>
-                          <p className="mb-4 text-sm leading-relaxed text-gray-300 sm:text-md">
+                          <p className="mb-4 text-sm leading-relaxed text-gray-500 sm:text-md">
                             * Unlock this QR-code by connecting your wallet to
                             verify you have required nft.
                           </p>
