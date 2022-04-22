@@ -1136,6 +1136,10 @@ select {
   visibility: hidden;
 }
 
+.fixed {
+  position: fixed;
+}
+
 .absolute {
   position: absolute;
 }
@@ -1167,6 +1171,14 @@ select {
   top: 0px;
 }
 
+.left-0 {
+  left: 0px;
+}
+
+.top-1\/2 {
+  top: 50%;
+}
+
 .right-0 {
   right: 0px;
 }
@@ -1183,12 +1195,12 @@ select {
   left: 0.5rem;
 }
 
-.z-10 {
-  z-index: 10;
-}
-
 .z-50 {
   z-index: 50;
+}
+
+.z-10 {
+  z-index: 10;
 }
 
 .col-span-3 {
@@ -1208,6 +1220,11 @@ select {
   margin-right: auto;
 }
 
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
 .-mx-4 {
   margin-left: -1rem;
   margin-right: -1rem;
@@ -1216,6 +1233,10 @@ select {
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+.mr-2 {
+  margin-right: 0.5rem;
 }
 
 .mr-6 {
@@ -1278,10 +1299,6 @@ select {
   margin-top: 2rem;
 }
 
-.mr-2 {
-  margin-right: 0.5rem;
-}
-
 .mt-6 {
   margin-top: 1.5rem;
 }
@@ -1330,12 +1347,12 @@ select {
   margin-bottom: 1rem;
 }
 
-.-ml-1 {
-  margin-left: -0.25rem;
-}
-
 .mr-3 {
   margin-right: 0.75rem;
+}
+
+.-ml-1 {
+  margin-left: -0.25rem;
 }
 
 .block {
@@ -1374,12 +1391,16 @@ select {
   height: 100vh;
 }
 
-.h-full {
-  height: 100%;
+.h-0 {
+  height: 0px;
 }
 
 .h-16 {
   height: 4rem;
+}
+
+.h-full {
+  height: 100%;
 }
 
 .h-6 {
@@ -1428,6 +1449,10 @@ select {
 
 .w-full {
   width: 100%;
+}
+
+.w-0 {
+  width: 0px;
 }
 
 .w-16 {
@@ -1526,6 +1551,23 @@ select {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+@-webkit-keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  -webkit-animation: spin 1s linear infinite;
+          animation: spin 1s linear infinite;
+}
+
 @-webkit-keyframes ping {
   75%, 100% {
     transform: scale(2);
@@ -1543,23 +1585,6 @@ select {
 .animate-ping {
   -webkit-animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
           animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-@-webkit-keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  -webkit-animation: spin 1s linear infinite;
-          animation: spin 1s linear infinite;
 }
 
 .cursor-pointer {
@@ -1912,11 +1937,6 @@ select {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(59 130 246 / 0));
 }
 
-.from-fuchsia-300 {
-  --tw-gradient-from: #f0abfc;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(240 171 252 / 0));
-}
-
 .from-red-500 {
   --tw-gradient-from: #ef4444;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(239 68 68 / 0));
@@ -1940,10 +1960,6 @@ select {
 .from-slate-500 {
   --tw-gradient-from: #64748b;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(100 116 139 / 0));
-}
-
-.via-green-400 {
-  --tw-gradient-stops: var(--tw-gradient-from), #4ade80, var(--tw-gradient-to, rgb(74 222 128 / 0));
 }
 
 .via-gray-50 {
@@ -1974,10 +1990,6 @@ select {
   --tw-gradient-to: #22c55e;
 }
 
-.to-rose-700 {
-  --tw-gradient-to: #be123c;
-}
-
 .to-blue-500 {
   --tw-gradient-to: #3b82f6;
 }
@@ -2000,6 +2012,10 @@ select {
 
 .to-yellow-100 {
   --tw-gradient-to: #fef9c3;
+}
+
+.fill-blue-600 {
+  fill: #2563eb;
 }
 
 .object-cover {
@@ -2298,6 +2314,16 @@ select {
   line-height: 1.5;
 }
 
+.text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity));
+}
+
+.text-gray-200 {
+  --tw-text-opacity: 1;
+  color: rgb(229 231 235 / var(--tw-text-opacity));
+}
+
 .text-gray-900 {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
@@ -2306,11 +2332,6 @@ select {
 .text-gray-700 {
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity));
-}
-
-.text-blue-500 {
-  --tw-text-opacity: 1;
-  color: rgb(59 130 246 / var(--tw-text-opacity));
 }
 
 .text-white {
@@ -2383,16 +2404,16 @@ select {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.opacity-75 {
+  opacity: 0.75;
+}
+
 .opacity-0 {
   opacity: 0;
 }
 
 .opacity-100 {
   opacity: 1;
-}
-
-.opacity-75 {
-  opacity: 0.75;
 }
 
 .opacity-50 {
@@ -2762,6 +2783,11 @@ select {
   .dark\:bg-yellow-200 {
     --tw-bg-opacity: 1;
     background-color: rgb(254 240 138 / var(--tw-bg-opacity));
+  }
+
+  .dark\:text-gray-600 {
+    --tw-text-opacity: 1;
+    color: rgb(75 85 99 / var(--tw-text-opacity));
   }
 
   .dark\:text-white {

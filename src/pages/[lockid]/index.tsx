@@ -75,6 +75,9 @@ function Lock(props: any) {
       // console.log('accountsChanged');
       router.reload();
     });
+    window.ethereum.on('networkChanged', function () {
+      router.reload();
+    });
   }, [data, loading]);
 
   if (lockmode === 'qrcode') {

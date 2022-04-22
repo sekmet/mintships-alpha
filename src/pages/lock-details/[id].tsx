@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { gql } from '@apollo/client/core';
+import { useLazyQuery } from '@apollo/client';
 import { RadioGroup } from '@headlessui/react';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import { ImageUpload } from '@sekmet/react-ipfs-uploader';
@@ -9,10 +9,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 
+import { Alert } from '@/components/Alerts';
 import NetworkDropdown from '@/components/Dropdowns/NetworkDropdown';
 import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
-import { graphqlClient as apolloClient } from '@/services/apolloClient';
+import LOCKDETAILS from '@/services/graphql/lock.query';
 import { classNames } from '@/utils';
 
 /* eslint-disable-next-line unused-imports/no-unused-vars */
@@ -39,47 +40,23 @@ const lockingTypes = [
   },
 ];
 
-const CREATE_LOCK = `
-mutation NewLock($lock: api_locks_insert_input!) {
-insert_api_locks(objects: [$lock]) {
-    returning {
-    id
-    userId
-    name
-    thumbnailUrl
-    cid
-    status
-    createdAt
-    }
-}
-}`;
-
-const createLockedContent = (lockRequest: {
-  name: string;
-  description: string;
-  thumbnailUrl: string;
-  contractAddress: string;
-  chainId: string;
-  lockType: string;
-  cid: string;
-}) => {
-  return apolloClient.mutate({
-    mutation: gql(CREATE_LOCK),
-    variables: {
-      lock: lockRequest,
-    },
-  });
-};
-
 const Index = () => {
   const router = useRouter();
+  const { id } = router.query;
   const { account } = useEthers();
+  const [getLockData, { data: datalock, loading }] = useLazyQuery(LOCKDETAILS);
   const [selectedLockingTypes, setSelectedLockingTypes] = useState<any>(
-    lockingTypes[0]
+    lockingTypes[datalock && datalock.lockType ? datalock.lockType : 0]
   );
+  const [fileOrLink, setFileOrLink] = useState<number>(0);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>();
   const [ipfsThumbUrl, setIpfsThumbUrl] = useState<string>();
   const [chainId, setChainId] = useState<string>();
+
+  const setLockContentSource = (e: any, value: number) => {
+    e.preventDefault();
+    setFileOrLink(value);
+  };
 
   const {
     register,
@@ -94,22 +71,42 @@ const Index = () => {
     lockData.cid = '';
     lockData.userId = account;
     lockData.status = 1;
-    const mergedItem = Object.assign(data, lockData);
+    console.log(data);
+    // const mergedItem = Object.assign(data, lockData);
     // console.log({ ...mergedItem });
 
-    const createLockedResult = await createLockedContent({
+    /* const createLockedResult = await createLockedContent({
       ...mergedItem,
     });
-    console.log(createLockedResult);
+
+    console.log(createLockedResult); */
+    Alert(
+      'success',
+      'Lock Updated!',
+      'Lock information updated successfully...'
+    );
+    router.push('/');
   };
-  console.log(errors);
+
+  if (errors) console.log(errors);
 
   useEffect(() => {
-    // console.log(thumbnailUrl);
+    const fetchData = async () => {
+      await getLockData({
+        variables: {
+          lockId: id || 0,
+        },
+      });
+    };
+    fetchData();
+    setThumbnailUrl(datalock?.api_locks_by_pk?.thumbnailUrl);
     window.ethereum.on('accountsChanged', function () {
       router.reload();
     });
-  }, [thumbnailUrl]);
+    window.ethereum.on('networkChanged', function () {
+      router.reload();
+    });
+  }, [datalock, loading, thumbnailUrl]);
 
   return (
     <Dashboard
@@ -125,7 +122,7 @@ const Index = () => {
         <div className="p-6 mb-0 bg-white rounded-t">
           <div className="flex justify-between text-center">
             <h6 className="text-xl font-bold text-gray-700">
-              Unlock content with a ERC721 token
+              Update Lock Information #{id || ''}
             </h6>
           </div>
         </div>
@@ -256,6 +253,7 @@ const Index = () => {
                   </label>
                   <input
                     type="text"
+                    defaultValue={datalock?.api_locks_by_pk?.name}
                     {...register('name', { required: true, maxLength: 130 })}
                     className="p-3 w-full text-sm bg-white rounded border-0 focus:outline-none focus:ring shadow transition-all duration-150 ease-linear placeholder:text-blueGray-300 text-blueGray-600"
                     placeholder="Your locked content name"
@@ -272,6 +270,7 @@ const Index = () => {
                     Description
                   </label>
                   <textarea
+                    defaultValue={datalock?.api_locks_by_pk?.description}
                     {...register('description', { required: true })}
                     className="p-3 w-full text-sm bg-white rounded border-0 focus:outline-none focus:ring shadow transition-all duration-150 ease-linear placeholder:text-blueGray-300 text-blueGray-600"
                     rows={3}
@@ -296,6 +295,7 @@ const Index = () => {
                     Contract Address
                   </label>
                   <input
+                    defaultValue={datalock?.api_locks_by_pk?.contractAddress}
                     {...register('contractAddress', { required: true })}
                     type="text"
                     className="p-3 w-full text-sm bg-white rounded border-0 focus:outline-none focus:ring shadow transition-all duration-150 ease-linear placeholder:text-blueGray-300 text-blueGray-600"
@@ -318,50 +318,89 @@ const Index = () => {
 
             <hr className="mt-6 border-b-1 border-blueGray-300" />
 
-            <h6 className="mt-3 mb-6 text-sm font-bold text-gray-900 uppercase">
-              File to submarine
+            <h6 className="mt-3 mb-1 text-sm font-bold text-gray-900 uppercase">
+              Upload a file or paste a link
             </h6>
+
+            <div className="inline-flex mb-6 rounded-md shadow-sm">
+              <a
+                id="uploadfile"
+                href="true"
+                onClick={(e) => setLockContentSource(e, 0)}
+                aria-current="page"
+                className="focus:z-10 py-2 px-4 text-sm font-medium text-blue-700 focus:text-blue-700 dark:text-white dark:hover:text-white dark:focus:text-white bg-white hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-l-md border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-500"
+              >
+                Upload a file to lock
+              </a>
+              <a
+                id="uselink"
+                href="true"
+                onClick={(e) => setLockContentSource(e, 1)}
+                className="focus:z-10 py-2 px-4 text-sm font-medium text-gray-900 hover:text-blue-700 focus:text-blue-700 dark:text-white dark:hover:text-white dark:focus:text-white bg-white hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-r-md border-y border-r border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-500"
+              >
+                Lock a existing link
+              </a>
+            </div>
+
             <div className="flex flex-wrap mb-6">
               <div className="px-4 w-full lg:w-12/12">
                 <div>
-                  <div className="flex justify-center py-5 px-6 mt-1 rounded-md border-2 border-gray-300 border-dashed">
-                    <div className="space-y-1 text-center">
-                      <svg
-                        className="mx-auto w-12 h-12 text-gray-400"
-                        stroke="currentColor"
-                        fill="none"
-                        viewBox="0 0 48 48"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <div className="flex text-lg text-gray-600">
-                        <label
-                          htmlFor="file-upload"
-                          className="relative font-bold text-indigo-600 hover:text-indigo-500 bg-white rounded-md focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 cursor-pointer"
+                  {!fileOrLink ? (
+                    <div className="flex justify-center py-5 px-6 mt-1 rounded-md border-2 border-gray-300 border-dashed">
+                      <div className="space-y-1 text-center">
+                        <svg
+                          className="mx-auto w-12 h-12 text-gray-400"
+                          stroke="currentColor"
+                          fill="none"
+                          viewBox="0 0 48 48"
+                          aria-hidden="true"
                         >
-                          <span>Select a file</span>
-                          <Link href="/upload" passHref>
-                            <button
-                              id="file-upload"
-                              name="file-upload"
-                              type="button"
-                              className="sr-only"
-                            />
-                          </Link>
-                        </label>
-                        <p className="pl-1"> to upload to IPFS</p>
+                          <path
+                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                            strokeWidth={2}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <div className="flex text-lg text-gray-600">
+                          <label
+                            htmlFor="file-upload"
+                            className="relative font-bold text-indigo-600 hover:text-indigo-500 rounded-md focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 cursor-pointer"
+                          >
+                            <span>Select a file</span>
+                            <Link href="/upload" passHref>
+                              <button
+                                id="file-upload"
+                                name="file-upload"
+                                type="button"
+                                className="sr-only"
+                              />
+                            </Link>
+                          </label>
+                          <p className="pl-1"> to upload to IPFS</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          You can upload PNG, JPG, GIF, MP4, MP3, OGG files.
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        You can upload PNG, JPG, GIF, MP4, MP3, OGG files.
-                      </p>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="relative mb-3 w-full">
+                      <label
+                        className="block mb-2 text-xs font-bold uppercase text-blueGray-600"
+                        htmlFor="contractAddress"
+                      >
+                        Link to lock
+                      </label>
+                      <input
+                        defaultValue={datalock?.api_locks_by_pk?.cid}
+                        {...register('cid')}
+                        type="text"
+                        className="p-3 w-full text-sm bg-white rounded border-0 focus:outline-none focus:ring shadow transition-all duration-150 ease-linear placeholder:text-blueGray-300 text-blueGray-600"
+                        placeholder="Link to lock"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

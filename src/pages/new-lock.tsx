@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 
+import { Alert } from '@/components/Alerts';
 import NetworkDropdown from '@/components/Dropdowns/NetworkDropdown';
 import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
@@ -108,12 +109,21 @@ const Index = () => {
       ...mergedItem,
     });
     console.log(createLockedResult);
+    Alert(
+      'success',
+      'Lock Complete!',
+      'Lock information created successfully...'
+    );
+    router.push('/');
   };
   console.log(errors);
 
   useEffect(() => {
     // console.log(thumbnailUrl);
     window.ethereum.on('accountsChanged', function () {
+      router.reload();
+    });
+    window.ethereum.on('networkChanged', function () {
       router.reload();
     });
   }, [thumbnailUrl]);

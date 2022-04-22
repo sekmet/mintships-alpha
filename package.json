@@ -13,6 +13,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "build:tailwind": "tailwind build -i src/styles/tailwind.css -o src/styles/global.css",
+    "watch:tailwind": "tailwind -w -i src/styles/tailwind.css -o src/styles/global.css",
     "build-types": "tsc --noEmit --pretty",
     "prepare": "husky install"
   },

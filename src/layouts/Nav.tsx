@@ -59,11 +59,15 @@ export default function Nav() {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
                 <div className="shrink-0">
-                  <img
-                    className="w-16 h-16"
-                    src="/assets/images/logo_mintships_alpha.png"
-                    alt="Mintships Alpha"
-                  />
+                  <Link href="/">
+                    <a id="logo">
+                      <img
+                        className="w-16 h-16"
+                        src="/assets/images/logo_mintships_alpha.png"
+                        alt="Mintships Alpha"
+                      />
+                    </a>
+                  </Link>
                 </div>
                 <div className="hidden md:block">
                   <div className="flex items-baseline ml-10 space-x-4">

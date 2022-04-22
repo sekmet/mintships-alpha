@@ -21,7 +21,6 @@ const Auth = (props: IAuthProps) => {
         'bg-gradient-to-r from-green-500 to-purple-500',
         'bg-gradient-to-r from-purple-500 to-green-500',
         'bg-gradient-to-r from-blue-500 to-purple-500',
-        'bg-conic-to-bl from-fuchsia-300 via-green-400 to-rose-700',
         'bg-gradient-to-r from-purple-500 to-blue-500',
         'bg-gradient-to-r from-red-500 to-purple-500',
         'bg-gradient-to-r from-purple-500 to-red-500',

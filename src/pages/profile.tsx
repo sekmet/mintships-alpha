@@ -17,6 +17,9 @@ const Profile = () => {
     window.ethereum.on('accountsChanged', function () {
       router.reload();
     });
+    window.ethereum.on('networkChanged', function () {
+      router.reload();
+    });
   }, []);
 
   return (

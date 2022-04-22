@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { gql, useLazyQuery } from '@apollo/client';
+import { useLazyQuery, useMutation } from '@apollo/client';
 import { useEthers } from '@usedappify/core';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -8,8 +8,11 @@ import { Base64 } from 'js-base64';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+import { ConfirmAlert } from '@/components/Alerts';
 import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
+import EXPLORE_LOCKS from '@/services/graphql/locks.query';
+import REMOVELOCK from '@/services/graphql/removelock.mutation';
 import { ellipsisAddressUrl } from '@/utils';
 
 declare let window: any;
@@ -29,58 +32,38 @@ export function getLockTypeName(lockId: number) {
   }
 }
 
-const EXPLORE_LOCKS = gql`
-  query Locks($userId: String!, $offset: Int, $limit: Int) {
-    api_locks_aggregate {
-      aggregate {
-        count
-      }
-    }
-    api_locks(
-      where: { userId: { _eq: $userId } }
-      limit: $limit
-      offset: $offset
-      order_by: { id: desc }
-    ) {
-      id
-      name
-      cid
-      userId
-      createdAt
-      lockType
-      status
-    }
-  }
-`;
-
 const Index = () => {
   const router = useRouter();
   const [locks, setLocks] = useState<any>();
   const { account } = useEthers();
   const [getLocksData, { data, loading }] = useLazyQuery(EXPLORE_LOCKS);
 
-  /* const exploreLocks = (exploreLocksRequest: {
-    userId: string;
-    offset: number;
-    limit: number;
-  }) => {
-    return apolloClient.query({
-      query: gql(EXPLORE_LOCKS),
-      variables: {
-        ...exploreLocksRequest
+  const [removeUserLock] = useMutation(REMOVELOCK, {
+    refetchQueries: [
+      {
+        query: EXPLORE_LOCKS, // DocumentNode object parsed with gql
+        variables: {
+          userId: account || '',
+          offset: 0,
+          limit: 30,
+        },
       },
-    });
+    ],
+  });
+
+  const removeConfirmAlert = (item: any) => {
+    ConfirmAlert(
+      'warning',
+      `Remove lock "${item.name ? item.name : `#${item.id}`}" ?`,
+      'Are you sure you want to remove this lock?',
+      'Confirm?',
+      'Lock removed!',
+      'Lock removed successfully...',
+      'success',
+      () => removeUserLock({ variables: { lockId: item.id } }),
+      router
+    );
   };
-  
-  const myLockings = async () => {
-    const result = await exploreLocks({
-      userId: account,
-      offset: 0,
-      limit: 30,
-    });
-  
-    return result.data?.api_locks;
-  }; */
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,6 +82,9 @@ const Index = () => {
     }
 
     window.ethereum.on('accountsChanged', function () {
+      router.reload();
+    });
+    window.ethereum.on('networkChanged', function () {
       router.reload();
     });
   }, [data, loading]);
@@ -218,7 +204,11 @@ const Index = () => {
                     )}
                   </td>
                   <td className="py-4 pr-4 pl-3 text-sm font-medium text-right sm:pr-6">
-                    <a href="#" className="text-red-600 hover:text-red-900">
+                    <a
+                      href="#"
+                      onClick={() => removeConfirmAlert(lock)}
+                      className="text-red-600 hover:text-red-900"
+                    >
                       Delete<span className="sr-only">, {lock.name}</span>
                     </a>
                   </td>

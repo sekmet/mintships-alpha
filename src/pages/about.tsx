@@ -20,6 +20,9 @@ const Index = () => {
     window.ethereum.on('accountsChanged', function () {
       router.reload();
     });
+    window.ethereum.on('networkChanged', function () {
+      router.reload();
+    });
   }, [blocknumber]);
 
   return (
@@ -52,6 +55,44 @@ const Index = () => {
             ⚡️
           </span>{' '}
         </p>
+        <p className="leading-text">
+          Mintships makes sharing unlockable content possible and easy for all
+          creators and recognizes tokens held in the ETH/Polygon
+          <br />
+          <strong className="text-sm">
+            (more networks available soon)
+          </strong>{' '}
+          wallet upon scanning of a QR code to enable the use of
+          membership/ticket NFTs in physical spaces.
+        </p>
+
+        <p className="leading-text">
+          There are many NFT token gating solutions available today, but none of
+          them handle content distribution well. As a creator who wants to give
+          exclusive access to media based, NFT token gating falls short. What
+          creators need is a way to store private, verifiable content AND being
+          able to serve that content based on ownership of an NFT.
+        </p>
+
+        <blockquote>Mintships tries solves that.</blockquote>
+
+        <p className="leading-text">
+          A simpler way to lock exclusive media content behind ownership of an
+          NFT.
+        </p>
+
+        <blockquote>
+          Upload a file, add some data about the file, choose what NFT contract
+          (contract address and EVM chain) to check on, and thats it.
+        </blockquote>
+
+        <p className="leading-text">
+          Creator will get a unique link that they can share knowing that the
+          exlusive content is safely protected from unauthorized access. NFT
+          projects, individual artists, brands, and more can leverage
+          Mintships.xyz to easily lock and serve content.
+        </p>
+
         {account && blockNumber && (
           <Fragment>
             <h2 className="-mt-3 mb-1 text-xl font-bold">Block number</h2>

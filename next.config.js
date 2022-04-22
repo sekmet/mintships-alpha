@@ -21,5 +21,8 @@ module.exports = withBundleAnalyzer({
     API_URL: process.env.API_URL || 'http://localhost:3000',
     INFURA_API_KEY: process.env.INFURA_API_KEY || '',
     HASURA_SECRET: process.env.HASURA_SECRET || '',
+    USE_WALLET_CONNECT: process.env.USE_WALLET_CONNECT || false,
+    USE_COINBASE_WALLET: process.env.USE_COINBASE_WALLET || false,
+    FORTMATIC_API_KEY: process.env.FORTMATIC_API_KEY || '',
   },
 });
