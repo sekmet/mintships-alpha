@@ -3,6 +3,8 @@ import { Fragment, useState, useEffect } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, SelectorIcon } from '@heroicons/react/solid';
 
+import { classNames, getProviderByChainId, getRandomElement } from '@/utils';
+
 type IConnectedNetwork = {
   id: number;
   name: string;
@@ -31,6 +33,46 @@ const networksAvailble = [
     thumbnail: '/assets/images/ETH.jpg',
   },
   {
+    id: 56,
+    name: 'Binance Chain Mainnet',
+    thumbnail: '/assets/images/binance.jpg',
+  },
+  {
+    id: 97,
+    name: 'Binance Chain Testnet',
+    thumbnail: '/assets/images/binance.jpg',
+  },
+  {
+    id: 25,
+    name: 'Cronos Mainnet Beta',
+    thumbnail: '/assets/images/cronos.png',
+  },
+  {
+    id: 338,
+    name: 'Cronos Testnet',
+    thumbnail: '/assets/images/cronos.png',
+  },
+  {
+    id: 250,
+    name: 'Fantom Opera',
+    thumbnail: '/assets/images/fantom.png',
+  },
+  {
+    id: 4002,
+    name: 'Fantom Testnet',
+    thumbnail: '/assets/images/fantom.png',
+  },
+  {
+    id: 43114,
+    name: 'Avalanche',
+    thumbnail: '/assets/images/avax.png',
+  },
+  {
+    id: 43113,
+    name: 'Fuji Testnet',
+    thumbnail: '/assets/images/avax.png',
+  },
+  {
     id: 80001,
     name: 'Polygon Mumbai',
     thumbnail: '/assets/images/POLYGON.jpg',
@@ -40,14 +82,30 @@ const networksAvailble = [
     name: 'Polygon Mainnet',
     thumbnail: '/assets/images/POLYGON.jpg',
   },
+  {
+    id: 1666600000,
+    name: 'Harmony S0',
+    thumbnail: '/assets/images/harmony.jpg',
+  },
+  {
+    id: 1666700000,
+    name: 'Harmony Testnet S0',
+    thumbnail: '/assets/images/harmony.jpg',
+  },
+  {
+    id: 1313161554,
+    name: 'Aurora',
+    thumbnail: '/assets/images/aurora.jpg',
+  },
+  {
+    id: 1313161555,
+    name: 'Aurora Testnet',
+    thumbnail: '/assets/images/aurora.jpg',
+  },
 ];
 
-export function classNames(...classes: string[]): string | undefined {
-  return classes.filter(Boolean).join(' ');
-}
-
 export default function NetworkDropdown(props: any) {
-  const { chainId, setChainId } = props;
+  const { chainId, setChainId, verifyContract } = props;
   const [selectedItem, setSelectedItem] = useState<
     undefined | IConnectedNetwork | IConnectedNetwork[]
   >(networksAvailble.filter((x) => String(x.id) === chainId));
@@ -56,15 +114,21 @@ export default function NetworkDropdown(props: any) {
     if (chainId) {
       const network = networksAvailble.filter((x) => String(x.id) === chainId);
       setSelectedItem(network[0] as IConnectedNetwork);
+      if (network[0])
+        verifyContract(
+          getRandomElement(getProviderByChainId(String(network[0].id)))
+        );
     }
-  }, [chainId]);
+  }, [chainId, setChainId]);
 
   return (
     <Listbox
       value={selectedItem as IConnectedNetwork}
       onChange={(e: IConnectedNetwork) => {
-        setSelectedItem(e);
         setChainId(e?.id);
+        setSelectedItem(e);
+        if (e.id)
+          verifyContract(getRandomElement(getProviderByChainId(String(e.id))));
       }}
     >
       {({ open }) => {

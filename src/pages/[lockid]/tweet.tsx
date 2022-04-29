@@ -1,24 +1,19 @@
 import React, { useEffect, useState } from 'react';
 
 // import { gql, useLazyQuery } from '@apollo/client';
-import { Interface } from '@ethersproject/abi';
-import { BigNumber } from '@ethersproject/bignumber';
-import { Contract } from '@ethersproject/contracts';
-import { Web3Provider } from '@ethersproject/providers';
-import Confetti from '@sekmet/react-confetti';
-import useWindowSize from '@sekmet/react-use/lib/useWindowSize';
+// import { Web3Provider } from '@ethersproject/providers';
 import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
+import axios from 'axios';
 import * as ethers from 'ethers';
-import { v4 as uuidv4 } from 'uuid';
+import { Base64 } from 'js-base64';
+import { stringSimilarity } from 'string-similarity-js';
 
-import { Alert } from '@/components/Alerts';
 import Identicon from '@/components/Wallet/Identicon';
+// import NoNetworkToast from '@/components/Wallet/NoNetworkToast';
 import { Lock } from '@/layouts/Lock';
 import { Meta } from '@/layouts/Meta';
-import erc721abi from '@/lib/abis/erc721.json';
 import { dataReward } from '@/lib/dataLock';
-import { signText } from '@/utils/network';
 
 // declare supportated chains
 export const injected = new InjectedConnector({
@@ -41,36 +36,38 @@ declare let window: any;
 
 const LockPage = (props: any) => {
   const [lock, setLock] = useState<any>();
-  const [provider, setProvider] = useState<any>();
+  // const [provider, setProvider] = useState<any>();
   const [isAllowedChainId, setAllowedChainId] = useState<boolean>(true);
-  const [content, setContent] = useState<string | boolean>(false);
+  // const [content, setContent] = useState<string | boolean>(false);
   const [signature, setSignature] = useState<string | boolean>(false);
   const [unlocking, setUnlocking] = useState<boolean>(false);
+  const [tweeting, setTweeting] = useState<boolean>(false);
+  const [tweeturl, setTweeturl] = useState<string | boolean>(false);
   const [unlocked, setUnlocked] = useState<string | boolean>(false);
   const [reward, setReward] = useState<any | boolean>(false);
   // const [fileExt, setFileExt] = useState("png");
   // const ref = useRef<any>();
   const { activateBrowserWallet, account } = useEthers();
-  const { width, height } = useWindowSize();
   // const etherBalance = useEtherBalance(account);
   // const [chainId, setChainid] = useState<any>();
   // const router = useRouter();
   const { data, loading } = props;
   // const [getLockReward, { data: reward }] = useLazyQuery(REWARD_UNLOCK);
 
-  const abi = new Interface(erc721abi);
+  // const abi = new Interface(erc721abi);
   // This can be an address or an ENS name
-  const address = data?.api_locks[0].contractAddress;
-  const verifylockid = uuidv4();
+  // const address = data?.api_locks[0].contractAddress;
+  // const verifylockid = uuidv4();
 
   function handleConnectWallet() {
     activateBrowserWallet();
+    console.log(isAllowedChainId);
     // console.log(account, active)
   }
 
-  const messageToSign = `To verify you own this particular NFT, please sign this message.\nThe NFT contract address is: ${address}\nThe verication ID is:\n ${verifylockid}`;
+  // const messageToSign = `To verify you own this particular NFT, please sign this message.\nThe NFT contract address is: ${address}\nThe verication ID is:\n ${verifylockid}`;
 
-  const signMessage = async (message: string) => {
+  /* const signMessage = async (message: string) => {
     let erc721: any = {};
     setUnlocking(true);
 
@@ -132,7 +129,7 @@ const LockPage = (props: any) => {
           did: `did:eth:${account}`,
           result,
         })
-      ); */
+      ); * /
 
       return result;
     } catch (error) {
@@ -141,21 +138,100 @@ const LockPage = (props: any) => {
       setUnlocked(false);
       return false;
     }
+  }; */
+
+  const onChangeTweetUrl = (e: any) => {
+    setTweeturl(e.target.value);
+  };
+
+  const prepareTweet = async (tweetContent: string) => {
+    const re0 = /#TITLE#/gi;
+    const new0TweetContent = tweetContent.replace(re0, data?.api_locks[0].name);
+    const re1 = /#LINKLOCK#/gi;
+    const new1TweetContent = new0TweetContent.replace(
+      re1,
+      `https://mintships.xyz/${Base64.btoa(
+        `/${data?.api_locks[0].id}-unlockcontent`
+      )}`
+    );
+    const re2 = /#WALLETADDRESS#/gi;
+    const new2TweetContent = new1TweetContent.replace(re2, String(account));
+    const re3 = /#UUID#/gi;
+    const new3TweetContent = new2TweetContent.replace(re3, 'UUIDv4');
+    // [#TITLE#]
+    // [#LINKLOCK#]
+    // [#WALLETADDRESS#]
+    // [#UUID#]
+    return new3TweetContent;
+  };
+
+  const sendTweet = async (e: any, tweetUnlock: string) => {
+    e.preventDefault();
+    setTweeting(true);
+    if (typeof window !== 'undefined') {
+      const tweet = await prepareTweet(tweetUnlock);
+      window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`,
+        '_blank'
+      );
+    }
+  };
+
+  const verifyTweet = async (e: any, tweetUrl: string, tweetUnlock: string) => {
+    e.preventDefault();
+    setTweeting(false);
+    setUnlocking(true);
+    const retweet = await prepareTweet(tweetUnlock);
+    await axios
+      .post(`/api/v1/tweet`, { tweetUrl })
+      .then((response: any) => {
+        // access the resp here....
+        // var payload = response.statusText;
+        // Alert('success', 'Congratulations...', 'Item minted with success...');
+        // console.log(response);
+        const { data: apidata } = response;
+        console.log(apidata, apidata.status);
+        if (apidata.status === true) {
+          const { tweet } = apidata;
+          console.log(tweet.text);
+          const result = stringSimilarity(tweet.text, retweet);
+          console.log(result);
+          if (result > 0.63) {
+            // Alert('success', 'Congratulations...', 'Item minted with success...');
+            // setUnlocked(data?.api_locks[0].cid);
+            setSignature(String(result));
+            dataReward(data?.api_locks[0].id).then((xreward: any) => {
+              setReward(xreward);
+              setUnlocked(xreward?.api_locks[0].cid);
+            });
+            setTweeting(false);
+            setUnlocking(false);
+          } else {
+            // Alert('error', 'Error...', 'Tweet not verified...');
+            setTweeting(true);
+            setUnlocking(false);
+          }
+        }
+
+        // router.push(`/mycollections/${owner_address}:${chainid}`);
+        return response;
+      })
+      .catch((error: any) => {
+        console.log('error', error);
+      });
   };
 
   useEffect(() => {
     if (signature && reward && reward?.api_locks[0].cid) {
+      window.location = reward.api_locks[0].cid;
       setUnlocking(false);
-      setTimeout(() => {
-        window.location = reward.api_locks[0].cid;
-      }, 6000);
     }
   }, [signature, unlocked, reward]);
 
   useEffect(() => {
     // Connect to the Ethereum network
-    const providerEth = new Web3Provider(window.ethereum, 'any');
-    setProvider(providerEth);
+    // const providerEth = new Web3Provider(window.ethereum, 'any');
+    // setProvider(providerEth);
 
     // Get the chain ID
     const allowedChainIds = [data?.api_locks[0].chainId];
@@ -185,56 +261,10 @@ const LockPage = (props: any) => {
     if (data && !loading) {
       setLock(data?.api_locks[0]);
     }
-  }, [data, loading, content]);
+  }, [data, loading]);
 
   return (
     <Lock meta={<Meta title={lock?.name} description={lock?.description} />}>
-      {!isAllowedChainId && (
-        <div
-          id="toast-warning"
-          className="flex absolute top-0 right-0 z-50 items-center p-4 mt-3 mr-3 w-full max-w-xs text-white dark:text-gray-400 bg-orange-600 dark:bg-gray-800 rounded-lg shadow"
-          role="alert"
-        >
-          <div className="inline-flex shrink-0 justify-center items-center w-8 h-8 text-orange-500 dark:text-orange-200 bg-orange-200 dark:bg-orange-700 rounded-lg">
-            <svg
-              className="w-10 h-10"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <div className="ml-3 text-sm font-bold">
-            Wrong network, please switch to the network chain {lock?.chainId}.
-          </div>
-          <button
-            type="button"
-            className="inline-flex p-1.5 -m-1.5 ml-auto w-8 h-8 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-300"
-            data-dismiss-target="#toast-warning"
-            aria-label="Close"
-          >
-            <span className="sr-only">Close</span>
-            <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-      )}
-
       {loading || !lock ? (
         <div
           id="loading-screen"
@@ -320,14 +350,49 @@ const LockPage = (props: any) => {
                               </span>
                             </div>
 
-                            {!signature && !unlocking && (
+                            {!signature && !unlocking && !tweeting && (
                               <div className="py-6 px-3 mt-0">
                                 <button
-                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-indigo-400 active:bg-indigo-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
+                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-500 active:bg-blue-500 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
                                   type="button"
-                                  onClick={() => signMessage(messageToSign)}
+                                  onClick={(e) =>
+                                    sendTweet(e, lock?.tweetUnlock)
+                                  }
                                 >
-                                  Sign to Unlock
+                                  Tweet to Unlock
+                                </button>
+                              </div>
+                            )}
+
+                            {!signature && !unlocking && tweeting && (
+                              <div className="py-6 px-3 mt-0">
+                                <div className="relative mb-3 w-full">
+                                  <label
+                                    className="block mb-2 text-xs font-bold text-gray-900 uppercase"
+                                    htmlFor="tweetUnlock"
+                                  >
+                                    Your tweet url
+                                  </label>
+                                  <textarea
+                                    onChange={(e) => onChangeTweetUrl(e)}
+                                    className="p-3 w-full text-sm placeholder:text-gray-300 text-gray-600 bg-white rounded border-2 focus:outline-none focus:ring shadow transition-all duration-150 ease-linear"
+                                    rows={3}
+                                    placeholder="Paste your tweet post url here..."
+                                  ></textarea>
+                                </div>
+
+                                <button
+                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-500 active:bg-blue-500 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
+                                  type="button"
+                                  onClick={(e) =>
+                                    verifyTweet(
+                                      e,
+                                      String(tweeturl),
+                                      lock?.tweetUnlock
+                                    )
+                                  }
+                                >
+                                  Verify Tweet
                                 </button>
                               </div>
                             )}
@@ -378,18 +443,14 @@ const LockPage = (props: any) => {
                               </div>
                             )}
 
-                            {!unlocking && signature && reward ? (
-                              <p className="mb-4 text-sm font-bold leading-relaxed text-green-500 sm:text-md">
-                                * Unlocked complete successfully, you will
-                                redirected to the unlocked content in a few
-                                seconds.
-                              </p>
-                            ) : (
-                              <p className="mb-4 text-sm leading-relaxed text-gray-500 sm:text-md">
-                                * Unlock this content by connecting your wallet
-                                to verify you have required nft.
-                              </p>
-                            )}
+                            <p className="mb-4 text-xs leading-relaxed text-left text-gray-500 sm:text-md">
+                              * Unlock this content via Twitter clicking the
+                              button above.
+                              <br />
+                              * Copy-paste the tweets URL into the above input
+                              box and fire away!
+                              <br />
+                            </p>
                           </div>
                         )}
                         {!account && (
@@ -424,14 +485,9 @@ const LockPage = (props: any) => {
               </div>
             </div>
           </div>
-          {!unlocking && signature && reward && (
-            <Confetti
-              width={width}
-              height={height}
-              initialVelocityY={30}
-              gravity={0.6}
-            />
-          )}
+          {/* isAllowedChainId === false && !loading && (
+            <NoNetworkToast chainId={lock?.chainId} />
+          ) */}
         </div>
       )}
     </Lock>

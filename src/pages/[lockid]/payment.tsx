@@ -1,24 +1,17 @@
 import React, { useEffect, useState } from 'react';
 
 // import { gql, useLazyQuery } from '@apollo/client';
-import { Interface } from '@ethersproject/abi';
-import { BigNumber } from '@ethersproject/bignumber';
-import { Contract } from '@ethersproject/contracts';
 import { Web3Provider } from '@ethersproject/providers';
-import Confetti from '@sekmet/react-confetti';
-import useWindowSize from '@sekmet/react-use/lib/useWindowSize';
 import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import * as ethers from 'ethers';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Alert } from '@/components/Alerts';
 import Identicon from '@/components/Wallet/Identicon';
 import { Lock } from '@/layouts/Lock';
 import { Meta } from '@/layouts/Meta';
-import erc721abi from '@/lib/abis/erc721.json';
 import { dataReward } from '@/lib/dataLock';
-import { signText } from '@/utils/network';
+import { getCurrencyByChainId } from '@/utils';
 
 // declare supportated chains
 export const injected = new InjectedConnector({
@@ -43,7 +36,7 @@ const LockPage = (props: any) => {
   const [lock, setLock] = useState<any>();
   const [provider, setProvider] = useState<any>();
   const [isAllowedChainId, setAllowedChainId] = useState<boolean>(true);
-  const [content, setContent] = useState<string | boolean>(false);
+  // const [content, setContent] = useState<string | boolean>(false);
   const [signature, setSignature] = useState<string | boolean>(false);
   const [unlocking, setUnlocking] = useState<boolean>(false);
   const [unlocked, setUnlocked] = useState<string | boolean>(false);
@@ -51,26 +44,25 @@ const LockPage = (props: any) => {
   // const [fileExt, setFileExt] = useState("png");
   // const ref = useRef<any>();
   const { activateBrowserWallet, account } = useEthers();
-  const { width, height } = useWindowSize();
   // const etherBalance = useEtherBalance(account);
   // const [chainId, setChainid] = useState<any>();
   // const router = useRouter();
   const { data, loading } = props;
   // const [getLockReward, { data: reward }] = useLazyQuery(REWARD_UNLOCK);
 
-  const abi = new Interface(erc721abi);
+  // const abi = new Interface(erc721abi);
   // This can be an address or an ENS name
-  const address = data?.api_locks[0].contractAddress;
-  const verifylockid = uuidv4();
+  // const address = data?.api_locks[0].contractAddress;
+  // const verifylockid = uuidv4();
 
   function handleConnectWallet() {
     activateBrowserWallet();
     // console.log(account, active)
   }
 
-  const messageToSign = `To verify you own this particular NFT, please sign this message.\nThe NFT contract address is: ${address}\nThe verication ID is:\n ${verifylockid}`;
+  // const messageToSign = `To verify you own this particular NFT, please sign this message.\nThe NFT contract address is: ${address}\nThe verication ID is:\n ${verifylockid}`;
 
-  const signMessage = async (message: string) => {
+  /* const signMessage = async (message: string) => {
     let erc721: any = {};
     setUnlocking(true);
 
@@ -132,7 +124,7 @@ const LockPage = (props: any) => {
           did: `did:eth:${account}`,
           result,
         })
-      ); */
+      ); * /
 
       return result;
     } catch (error) {
@@ -141,14 +133,64 @@ const LockPage = (props: any) => {
       setUnlocked(false);
       return false;
     }
+  }; */
+
+  const payToUnlock = async (to: string, amount: string) => {
+    setUnlocking(true);
+    const providerPay = new ethers.providers.Web3Provider(
+      window.ethereum,
+      'any'
+    );
+    // get a signer wallet!
+    const signerPay = providerPay.getSigner();
+    // get the address of the signer
+    const addressPay = await signerPay.getAddress();
+
+    // Creating a transaction param
+    const tx = {
+      from: addressPay,
+      to,
+      value: ethers.utils.parseEther(amount),
+      nonce: await provider.getTransactionCount(addressPay, 'latest'),
+      // gasLimit: ethers.utils.hexlify(10000),
+      // gasPrice: ethers.utils.hexlify(parseInt(await provider.getGasPrice())),
+    };
+
+    try {
+      signerPay.sendTransaction(tx).then((transaction) => {
+        console.dir(transaction);
+        transaction.wait(3).then((receipt): any => {
+          console.dir(receipt);
+          // alert("Payment sent!");
+          setUnlocking(false);
+          if (!receipt) {
+            Alert(
+              'error',
+              'Permission Denied',
+              'You do not own this NFT in this account address you are connected, please try again using another address.'
+            );
+            setUnlocking(false);
+            return false;
+          }
+
+          setSignature(JSON.stringify(receipt));
+
+          return dataReward(data?.api_locks[0].id).then((xreward: any) => {
+            setReward(xreward);
+            setUnlocked(xreward?.api_locks[0].cid);
+          });
+        });
+      });
+    } catch (error) {
+      console.log(error);
+      setUnlocking(false);
+    }
   };
 
   useEffect(() => {
     if (signature && reward && reward?.api_locks[0].cid) {
+      window.location = reward.api_locks[0].cid;
       setUnlocking(false);
-      setTimeout(() => {
-        window.location = reward.api_locks[0].cid;
-      }, 6000);
     }
   }, [signature, unlocked, reward]);
 
@@ -185,7 +227,9 @@ const LockPage = (props: any) => {
     if (data && !loading) {
       setLock(data?.api_locks[0]);
     }
-  }, [data, loading, content]);
+  }, [data, loading]);
+
+  console.log(lock);
 
   return (
     <Lock meta={<Meta title={lock?.name} description={lock?.description} />}>
@@ -323,11 +367,18 @@ const LockPage = (props: any) => {
                             {!signature && !unlocking && (
                               <div className="py-6 px-3 mt-0">
                                 <button
-                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-indigo-400 active:bg-indigo-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
+                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-600 active:bg-blue-600 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
                                   type="button"
-                                  onClick={() => signMessage(messageToSign)}
+                                  onClick={async () =>
+                                    payToUnlock(
+                                      lock?.walletAddress,
+                                      String(lock?.paymentUnlockAmount)
+                                    )
+                                  }
                                 >
-                                  Sign to Unlock
+                                  Pay {lock?.paymentUnlockAmount}{' '}
+                                  {getCurrencyByChainId(lock?.chainId)} to
+                                  Unlock
                                 </button>
                               </div>
                             )}
@@ -378,25 +429,17 @@ const LockPage = (props: any) => {
                               </div>
                             )}
 
-                            {!unlocking && signature && reward ? (
-                              <p className="mb-4 text-sm font-bold leading-relaxed text-green-500 sm:text-md">
-                                * Unlocked complete successfully, you will
-                                redirected to the unlocked content in a few
-                                seconds.
-                              </p>
-                            ) : (
-                              <p className="mb-4 text-sm leading-relaxed text-gray-500 sm:text-md">
-                                * Unlock this content by connecting your wallet
-                                to verify you have required nft.
-                              </p>
-                            )}
+                            <p className="mb-4 text-sm leading-relaxed text-gray-500 sm:text-md">
+                              * Unlock this content by connecting your wallet to
+                              verify you have required nft.
+                            </p>
                           </div>
                         )}
                         {!account && (
                           <div className="px-4 w-full">
                             <div className="py-6 px-3 mt-0">
                               <button
-                                className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-orange-400 active:bg-orange-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
+                                className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-600 active:bg-blue-600 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
                                 type="button"
                                 onClick={
                                   account
@@ -413,7 +456,7 @@ const LockPage = (props: any) => {
                             </div>
                             <p className="mb-4 text-sm leading-relaxed text-gray-500 sm:text-md">
                               * Unlock this content by connecting your wallet to
-                              verify you have required nft.
+                              pay the amount required.
                             </p>
                           </div>
                         )}
@@ -424,14 +467,6 @@ const LockPage = (props: any) => {
               </div>
             </div>
           </div>
-          {!unlocking && signature && reward && (
-            <Confetti
-              width={width}
-              height={height}
-              initialVelocityY={30}
-              gravity={0.6}
-            />
-          )}
         </div>
       )}
     </Lock>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
@@ -22,6 +22,7 @@ export const injected = new InjectedConnector({
 
 export default function Login() {
   const { activateBrowserWallet, account, activate } = useEthers();
+  const [showWalletHelp, setShowWalletHelp] = useState(false);
   const router = useRouter();
   // const { providers } = props;
 
@@ -29,6 +30,14 @@ export default function Login() {
     activateBrowserWallet();
     // console.log(account, providers);
   }
+
+  const displayWalletHelp = (e: any) => {
+    e.preventDefault();
+    setShowWalletHelp(true);
+    setTimeout(() => {
+      setShowWalletHelp(false);
+    }, 6000);
+  };
 
   useEffect(() => {
     async function getAccount() {
@@ -338,6 +347,7 @@ export default function Login() {
               <div>
                 <a
                   href="#"
+                  onClick={(e: any) => displayWalletHelp(e)}
                   className="inline-flex items-center text-xs font-normal text-gray-500 dark:text-gray-400 hover:underline"
                 >
                   <svg
@@ -419,6 +429,17 @@ export default function Login() {
           </div>
         </div>
       </div>
+      {showWalletHelp && (
+        <div className="flex flex-col justify-center py-1 min-h-full">
+          <span className="p-6 py-0.5 px-2.5 mr-2 text-sm font-semibold text-yellow-800 dark:text-yellow-900 bg-yellow-100 dark:bg-yellow-200 rounded">
+            Your wallet is like your Ethereum account. You use it to connect to
+            this app and other decentralized applications (dapps). This is
+            similar to signing in with Google or Facebook, except you are
+            signing in with your own Ethereum(or other evm network) address that
+            is saved in your wallet.
+          </span>
+        </div>
+      )}
     </Auth>
   );
 }

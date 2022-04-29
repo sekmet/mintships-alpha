@@ -22,9 +22,9 @@ const AuthApp = (props: IAuthProps) => {
   return (
     <div
       id="loading-screen"
-      className="block fixed top-0 left-0 z-50 w-full h-screen bg-white opacity-75"
+      className="block fixed top-0 left-0 z-50 w-full h-full bg-white opacity-75"
     >
-      <span className="block relative top-1/2 my-0 mx-auto w-0 h-0 text-blue-500 opacity-75">
+      <span className="relative top-1/2 my-0 mx-auto w-0 h-0 text-blue-500 opacity-75">
         <div className="text-center">
           <svg
             role="status"

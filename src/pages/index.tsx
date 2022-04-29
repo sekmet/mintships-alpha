@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
 
 import { useLazyQuery, useMutation } from '@apollo/client';
+import { QrcodeIcon, ShareIcon, LockClosedIcon } from '@heroicons/react/solid';
 import { useEthers } from '@usedappify/core';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Base64 } from 'js-base64';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Skeleton from 'react-loading-skeleton';
 
 import { ConfirmAlert } from '@/components/Alerts';
 import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
 import EXPLORE_LOCKS from '@/services/graphql/locks.query';
 import REMOVELOCK from '@/services/graphql/removelock.mutation';
-import { ellipsisAddressUrl } from '@/utils';
 
 declare let window: any;
 
@@ -132,7 +133,7 @@ const Index = () => {
                   scope="col"
                   className="hidden py-3.5 px-3 text-sm font-semibold text-left text-gray-900 lg:table-cell"
                 >
-                  CID
+                  Network
                 </th>
                 <th
                   scope="col"
@@ -142,15 +143,21 @@ const Index = () => {
                 </th>
                 <th
                   scope="col"
-                  className="py-3.5 px-3 text-sm font-semibold text-left text-gray-900"
+                  className="hidden py-3.5 px-3 text-sm font-semibold text-left text-gray-900 sm:table-cell"
                 >
                   Created At
                 </th>
-                <th scope="col" className="relative py-3.5 pr-4 pl-3 sm:pr-6">
-                  <span className="sr-only">Share</span>
+                <th
+                  scope="col"
+                  className="py-3.5 px-3 text-sm font-semibold text-left text-gray-900"
+                >
+                  QRcode
                 </th>
-                <th scope="col" className="relative py-3.5 pr-4 pl-3 sm:pr-6">
-                  <span className="sr-only">QRcode</span>
+                <th
+                  scope="col"
+                  className="py-3.5 px-3 text-sm font-semibold text-left text-gray-900"
+                >
+                  Share
                 </th>
                 <th scope="col" className="relative py-3.5 pr-4 pl-3 sm:pr-6">
                   <span className="sr-only">Delete</span>
@@ -158,6 +165,127 @@ const Index = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
+              {loading
+                ? [...Array(6)].map((_, i) => {
+                    return (
+                      <tr key={i}>
+                        <td>
+                          <div className="mt-1 col-sm-2">
+                            <div className="p-3 text-center card">
+                              <Skeleton
+                                enableAnimation={true}
+                                className="rounded-sm"
+                                count={1}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="mt-1 col-sm-2">
+                            <div className="p-3 text-center card">
+                              <Skeleton
+                                enableAnimation={true}
+                                className="rounded-sm"
+                                count={1}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="mt-1 col-sm-2">
+                            <div className="p-3 text-center card">
+                              <Skeleton
+                                enableAnimation={true}
+                                className="rounded-sm"
+                                count={1}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="mt-1 col-sm-2">
+                            <div className="p-3 text-center card">
+                              <Skeleton
+                                enableAnimation={true}
+                                className="rounded-sm"
+                                count={1}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="mt-1 col-sm-2">
+                            <div className="p-3 text-center card">
+                              <Skeleton
+                                enableAnimation={true}
+                                className="rounded-sm"
+                                count={1}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="mt-1 col-sm-2">
+                            <div className="p-3 text-center card">
+                              <Skeleton
+                                enableAnimation={true}
+                                className="rounded-sm"
+                                count={1}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="mt-1 col-sm-2">
+                            <div className="p-3 text-center card">
+                              <Skeleton
+                                enableAnimation={true}
+                                className="rounded-sm"
+                                count={1}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                : null}
+
+              {locks?.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={7} className="p-3">
+                    <div className="flex justify-center py-5 px-6 mt-1 rounded-md border-2 border-gray-300 border-dashed">
+                      <div className="space-y-1 text-center">
+                        <LockClosedIcon
+                          className="mx-auto w-12 h-12 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        <div className="flex text-lg text-gray-600">
+                          <label
+                            htmlFor="new-lock"
+                            className="relative font-bold text-indigo-600 hover:text-indigo-500 rounded-md focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 cursor-pointer"
+                          >
+                            <span>Click here</span>
+                            <Link href="/new-lock" passHref>
+                              <button
+                                id="new-lock"
+                                name="new-lock"
+                                type="button"
+                                className="sr-only"
+                              />
+                            </Link>
+                          </label>
+                          <p className="pl-1"> to create a new LOCK</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          You have no locks active.
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
               {locks?.map((lock: any) => (
                 <tr key={lock.id}>
                   <td className="py-4 pr-3 pl-4 w-full max-w-0 text-sm font-medium text-gray-900 sm:pl-6 sm:w-auto sm:max-w-none">
@@ -165,9 +293,9 @@ const Index = () => {
                       <a id="lock-details">{lock.name}</a>
                     </Link>
                     <dl className="font-normal lg:hidden">
-                      <dt className="sr-only">CID</dt>
+                      <dt className="sr-only">Network</dt>
                       <dd className="mt-1 text-gray-700 truncate">
-                        {lock.cid}
+                        {lock.network}
                       </dd>
                       <dt className="sr-only sm:hidden">Lock Type</dt>
                       <dd className="mt-1 text-gray-500 truncate sm:hidden">
@@ -176,18 +304,19 @@ const Index = () => {
                     </dl>
                   </td>
                   <td className="hidden py-4 px-3 text-sm text-gray-500 lg:table-cell">
-                    {ellipsisAddressUrl(lock.cid)}
+                    {lock.network}
                   </td>
                   <td className="hidden py-4 px-3 text-xs font-semibold text-gray-700 sm:table-cell">
                     {getLockTypeName(lock.lockType)}
                   </td>
-                  <td className="py-4 px-3 text-sm text-gray-500">
+                  <td className="hidden py-4 px-3 text-sm text-gray-500 sm:table-cell">
                     {dayjs(lock.createdAt).fromNow()}
                   </td>
                   <td className="py-4 pr-4 pl-3 text-sm font-medium text-right sm:pr-6">
                     <Link href={Base64.btoa(`/${lock.id}-qrcode`)}>
-                      <a href="#" className="text-blue-600 hover:text-blue-900">
-                        QRCode<span className="sr-only">, {lock.name}</span>
+                      <a href="#" className="text-gray-600 hover:text-blue-900">
+                        <QrcodeIcon className="w-6 h-6" aria-hidden="true" />
+                        <span className="sr-only">, QRCode {lock.name}</span>
                       </a>
                     </Link>
                   </td>
@@ -196,9 +325,10 @@ const Index = () => {
                       <Link href={Base64.btoa(`/${lock.id}-unlockcontent`)}>
                         <a
                           href="#"
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-gray-600 hover:text-indigo-900"
                         >
-                          Share<span className="sr-only">, {lock.name}</span>
+                          <ShareIcon className="w-6 h-6" aria-hidden="true" />
+                          <span className="sr-only">, Share {lock.name}</span>
                         </a>
                       </Link>
                     )}

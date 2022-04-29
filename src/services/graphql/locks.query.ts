@@ -15,6 +15,8 @@ const exploreLocks = gql`
     ) {
       id
       name
+      chainId
+      network
       cid
       userId
       createdAt

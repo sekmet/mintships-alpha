@@ -10,6 +10,7 @@ import { /* ApolloCache, */ InMemoryCache } from '@apollo/client/cache';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';
 import fetch from 'cross-fetch';
+import * as ethers from 'ethers';
 import { createClient } from 'graphql-ws';
 
 import {
@@ -22,6 +23,8 @@ export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__';
 let apolloClient: any;
 
 function createApolloClient(graphUri?: string, initialState?: any) {
+  let userId: string | null = null;
+  if (typeof window !== 'undefined') userId = localStorage.getItem('account');
   const authLink = new ApolloLink((operation, forward) => {
     operation.setContext({
       fetchOptions: {
@@ -29,9 +32,11 @@ function createApolloClient(graphUri?: string, initialState?: any) {
       },
       headers: {
         'X-Hasura-Admin-Secret': process.env.HASURA_SECRET,
-        'X-Hasura-Role': 'admin',
-        // 'X-Hasura-User-Id': authUser.user.id ? authUser.user.id : '-1',
-        // 'X-Hasura-Role': 'user',
+        // 'X-Hasura-Role': 'admin',
+        'X-Hasura-User-Id': userId
+          ? ethers.utils.getAddress(userId)
+          : '0x0000000000000000000000000000000000000000',
+        'X-Hasura-Role': 'user',
         // 'x-hasura-role': 'anonymous',
       },
     });
@@ -72,8 +77,12 @@ function createApolloClient(graphUri?: string, initialState?: any) {
     link: authLink.concat(link),
     cache: new InMemoryCache().restore(initialState),
     defaultOptions: {
+      watchQuery: {
+        fetchPolicy: 'no-cache',
+        errorPolicy: 'ignore',
+      },
       query: {
-        fetchPolicy: 'network-only',
+        fetchPolicy: 'no-cache',
         errorPolicy: 'all',
       },
     },
@@ -87,18 +96,18 @@ export function initializeApollo(initialState = null, graphUri?: string) {
     apolloClient ?? createApolloClient(graphUri, initialState);
 
   /* if (initialState) {
-    const existingCache = currentApolloClient.extract()
+    const existingCache = currentApolloClient.extract();
 
     // @ts-ignore
     const data = merge(initialState, existingCache, {
-      arrayMerge: (destinationArray, sourceArray) => [
+      arrayMerge: (destinationArray: any, sourceArray: any) => [
         ...sourceArray,
-        ...destinationArray.filter((d) =>
-          sourceArray.every((s) => !isEqual(d, s))
+        ...destinationArray.filter((d: any) =>
+          sourceArray.every((s: any) => !isEqual(d, s))
         ),
       ],
-    })
-    currentApolloClient.cache.restore(data)
+    });
+    currentApolloClient.cache.restore(data);
   } */
 
   if (typeof window === 'undefined') return currentApolloClient;

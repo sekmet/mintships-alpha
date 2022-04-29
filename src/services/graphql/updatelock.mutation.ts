@@ -5,6 +5,10 @@ const updateLock = gql`
     update_api_locks_by_pk(pk_columns: { id: $lockId }, _set: $changes) {
       id
       name
+      chainId
+      walletAddress
+      paymentUnlockAmount
+      network
       cid
       userId
       createdAt

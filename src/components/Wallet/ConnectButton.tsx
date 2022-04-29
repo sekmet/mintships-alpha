@@ -1,11 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { formatEther } from '@ethersproject/units';
 import { useEtherBalance, useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
+import { useRouter } from 'next/router';
 
 import Identicon from '@/components/Wallet/Identicon';
-// import { useRouter } from 'next/router';
+import { getCurrencyByChainId } from '@/utils';
 
 declare let window: any;
 
@@ -24,9 +25,9 @@ export default function ConnectButton({
 }: any) {
   const { activateBrowserWallet, account, activate } = useEthers();
   const etherBalance = useEtherBalance(account);
-  // const [chainId, setChainid] = useState<any>();
-  // const router = useRouter();
-  const allowedChainIds = [1, 3, 4, 5, 42, 1337, 80001];
+  const [chainId, setChainid] = useState<any>();
+  const router = useRouter();
+  // const allowedChainIds = [1, 3, 4, 5, 42, 1337, 80001];
 
   function handleConnectWallet() {
     activateBrowserWallet();
@@ -35,7 +36,7 @@ export default function ConnectButton({
 
   useEffect(() => {
     if (accountId) {
-      console.log(accountId);
+      // console.log(accountId);
       // if (account === accountId)
       activate(injected);
     }
@@ -45,20 +46,24 @@ export default function ConnectButton({
       const currAccount = accounts[0];
       // do something with new account here
       // console.log('Account ==> ', account);
-      const chainId = window.ethereum.networkVersion;
-      localStorage.setItem('chainid', chainId);
-      // setChainid(chainId);
+      localStorage.setItem('chainid', window.ethereum.networkVersion);
+      setChainid(window.ethereum.networkVersion);
       localStorage.setItem('account', currAccount);
     }
 
     window.ethereum.on('accountsChanged', function () {
       getAccount();
+      router.reload();
+    });
+
+    window.ethereum.on('networkChanged', function () {
+      router.reload();
     });
 
     // console.log('allowedChainIds.includes(window.ethereum.networkVersion) ', window.ethereum.networkVersion, allowedChainIds.includes(parseInt(window.ethereum.networkVersion,10)) )
 
     /* eslint-disable no-underscore-dangle */
-    if (
+    /* if (
       window?.ethereum &&
       !allowedChainIds.includes(parseInt(window.ethereum.networkVersion, 10))
     ) {
@@ -71,10 +76,11 @@ export default function ConnectButton({
       } catch (error) {
         console.log(error);
       }
-    }
+    } */
 
     if (account && account !== 'undefined') activate(injected);
     // console.log(account,injected)
+    getAccount();
   }, [account]);
 
   return account ? (
@@ -82,7 +88,9 @@ export default function ConnectButton({
       <div className="px-3">
         <span className="text-white text-md">
           {etherBalance && parseFloat(formatEther(etherBalance)).toFixed(3)}{' '}
-          {/* getCurrencyByChainId(chainId || 1) */ 'ETH'}
+          {getCurrencyByChainId(
+            chainId || parseInt(window.ethereum.networkVersion, 10) || 1
+          )}
         </span>
       </div>
       <button onClick={handleOpenModal}>

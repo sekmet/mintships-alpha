@@ -1,17 +1,21 @@
-import { Fragment } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 
 import { Disclosure, Menu, Transition } from '@headlessui/react';
-import { BellIcon, MenuIcon, XIcon } from '@heroicons/react/outline';
+import { MenuIcon, XIcon } from '@heroicons/react/outline';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import ConnectButton from '@/components/Wallet/ConnectButton';
 import Identicon from '@/components/Wallet/Identicon';
-import { classNames } from '@/utils';
+import { classNames, ellipsisAddress, getNetworkNameByChainId } from '@/utils';
+
+declare let window: any;
 
 export default function Nav() {
   const router = useRouter();
+  const [chainId, setChainid] = useState<any>();
+  const [account, setAccount] = useState<string>();
   // const { isOpen, onOpen, onClose } = useDisclosure();
   const { data } = useSession();
   const token: any = data?.token;
@@ -32,7 +36,7 @@ export default function Nav() {
   ];
 
   const user = {
-    name: 'IPFS User',
+    name: ellipsisAddress(String(account)),
     email: 'ipfs@blockchain.eth',
     imageUrl: '/favicon-32x32.png',
   };
@@ -50,6 +54,16 @@ export default function Nav() {
     { name: 'Settings', href: '#', onClick: () => console.log('Settings') },
   ];
 
+  useEffect(() => {
+    const getAccount = async () => {
+      const accounts = await window.ethereum.enable();
+      const currAccount = accounts[0];
+      setAccount(currAccount);
+      setChainid(window.ethereum.networkVersion);
+    };
+    getAccount();
+  }, []);
+
   const onOpen = () => console.log('onOpen disclosure');
   return (
     <Disclosure as="nav" className="bg-gray-800">
@@ -62,8 +76,8 @@ export default function Nav() {
                   <Link href="/">
                     <a id="logo">
                       <img
-                        className="w-16 h-16"
-                        src="/assets/images/logo_mintships_alpha.png"
+                        className="h-16"
+                        src="/assets/images/icon_mintship_alphav01_logow933.png"
                         alt="Mintships Alpha"
                       />
                     </a>
@@ -92,13 +106,20 @@ export default function Nav() {
               </div>
               <div className="hidden md:block">
                 <div className="flex items-center ml-4 md:ml-6">
-                  <button
+                  <div className="flex justify-center items-center p-1 text-gray-700 bg-gray-900 rounded-xl">
+                    <div className="py-1 px-3">
+                      <span className="font-bold text-gray-300 text-md">
+                        {chainId && getNetworkNameByChainId(chainId)}
+                      </span>
+                    </div>
+                  </div>
+                  {/* <button
                     type="button"
                     className="p-1 text-gray-400 hover:text-white bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                   >
                     <span className="sr-only">View notifications</span>
                     <BellIcon className="w-6 h-6" aria-hidden="true" />
-                  </button>
+                          </button> */}
 
                   {/* Profile dropdown */}
                   <Menu as="div" className="relative ml-3">
@@ -200,17 +221,17 @@ export default function Nav() {
                   <div className="text-base font-medium leading-none text-white">
                     {user.name}
                   </div>
-                  <div className="text-sm font-medium leading-none text-gray-400">
+                  {/* <div className="text-sm font-medium leading-none text-gray-400">
                     {user.email}
-                  </div>
+                  </div> */}
                 </div>
-                <button
+                {/* <button
                   type="button"
                   className="shrink-0 p-1 ml-auto text-gray-400 hover:text-white bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="w-6 h-6" aria-hidden="true" />
-                </button>
+                </button> */}
               </div>
               <div className="px-2 mt-3 space-y-1">
                 {userNavigation.map((item) => (

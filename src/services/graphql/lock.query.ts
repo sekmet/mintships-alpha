@@ -8,6 +8,9 @@ const lockDetails = gql`
       description
       userId
       contractAddress
+      walletAddress
+      paymentUnlockAmount
+      tweetUnlock
       tokenId
       thumbnailUrl
       chainId
