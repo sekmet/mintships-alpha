@@ -1,47 +1,33 @@
-# Mintships Alpha Release (ETH/MATIC)
+# Mintships Alpha Release
 
 <p align="center">
-  <img src="docs/logo_mintships_alpha.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
+  <img src="docs/logo_mintships_alpha.png?raw=true" alt="Mintships Alpha Release"></a>
 </p>
 
-🚀 Mintships Alpha makes sharing unlockable content possible for all creators nd recognizes tokens held in the ETH/Polygon wallet upon scanning of a QR code to enable the use of membership/ticket NFTs in physical spaces.
+🚀 Mintships Alpha makes sharing unlockable content possible for all creators nd recognizes tokens held in the wallet upon scanning of a QR code to enable the use of membership/ticket NFTs in physical spaces.
 
 Because every creator should have an easy, direct way to share premium content with their community
 
-## Demo
+## Website
 
-### [https://mintships.nftify.one/](https://mintships.nftify.one/)
+### [https://www.mintships.xyz/](https://www.mintships.xyz/)
 
 ## Features
 
-- 🔥 Allow creators to share unlockable content with their community
-- 🎉 Allow create a QR code to enable the use of membership/ticket NFTs in physical spaces
-
-
-<p align="center">
-  <img src="docs/mintships_a1.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
-</p>
+- 🔥 Share premium content with your community easy and direct using NFT ownership!
+- 🔥 Allow create a QR code to enable the use of membership/ticket NFTs in physical spaces.
+- 🔥 Accept cryptocurrency payments in your lock page with no middleman or transaction fees.
+- 🔥 Tweet to unlock premium content feature.
+- 🔥 Easily use existing links to premium content to create a new content lock.
 
 <p align="center">
-  <img src="docs/mintships_a2.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
-</p>
-
-<p align="center">
-  <img src="docs/mintships_a2_1.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
-</p>
-
-<p align="center">
-  <img src="docs/mintships_a3.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
-</p>
-
-<p align="center">
-  <img src="docs/mintships_a5.png?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
+  <img src="https://www.mintships.xyz/assets/images/mintships_unlock1.gif?raw=true" alt="Mintships Alpha Release (ETH/MATIC)"></a>
 </p>
 
 
 ## Requirements
 
-- Node.js 14+, Npm and Metamask
+- Node.js 16+, Npm and Metamask
 
 ## Getting started
 
