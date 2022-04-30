@@ -13,7 +13,7 @@ export default function Navbar() {
                 className="inline-block py-2 mr-4 text-xl font-bold leading-relaxed text-white uppercase whitespace-nowrap opacity-50"
                 id="home"
               >
-                MINTSHIP ALPHA
+                MINTSHIPS ALPHA
               </a>
             </Link>
           </div>

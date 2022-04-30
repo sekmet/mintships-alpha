@@ -28,6 +28,8 @@ export function getLockTypeName(lockId: number) {
       return 'Payment';
     case '3':
       return 'Retweet';
+    case '4':
+      return 'Token';
     default:
       return 'Unknown';
   }
@@ -81,14 +83,16 @@ const Index = () => {
     if (data && !loading) {
       setLocks(data?.api_locks);
     }
+  }, [data, loading]);
 
+  useEffect(() => {
     window.ethereum.on('accountsChanged', function () {
       router.reload();
     });
     window.ethereum.on('networkChanged', function () {
       router.reload();
     });
-  }, [data, loading]);
+  }, [loading]);
 
   return (
     <Dashboard

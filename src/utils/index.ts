@@ -40,6 +40,12 @@ export const getCurrencyByChainId = (chainId: string) => {
     case '42':
       result = 'ETH';
       break;
+    case '28':
+      result = 'ETH';
+      break;
+    case '288':
+      result = 'ETH';
+      break;
     case '56':
       result = 'BNB';
       break;
@@ -51,6 +57,15 @@ export const getCurrencyByChainId = (chainId: string) => {
       break;
     case '80001':
       result = 'MATIC';
+      break;
+    case '1284':
+      result = 'GLMR';
+      break;
+    case '1285':
+      result = 'MOVR';
+      break;
+    case '1287':
+      result = 'DEV';
       break;
     case '250':
       result = 'FTM';
@@ -108,11 +123,26 @@ export const getNetworkNameByChainId = (chainId: string) => {
     case '42':
       result = 'kovan';
       break;
+    case '28':
+      result = 'boba-rinkeby';
+      break;
+    case '288':
+      result = 'boba';
+      break;
     case '56':
       result = 'bsc';
       break;
     case '97':
       result = 'bsc-testnet';
+      break;
+    case '1284':
+      result = 'moonbeam';
+      break;
+    case '1285':
+      result = 'moonriver';
+      break;
+    case '1287':
+      result = 'moonbase';
       break;
     case '137':
       result = 'polygon';
@@ -179,6 +209,12 @@ export const getProviderByChainId = (chainId: string) => {
     case '42':
       result = process.env.KOVAN_NETWORK_PROVIDER;
       break;
+    case '28':
+      result = process.env.BOBATESTNET_NETWORK_PROVIDER;
+      break;
+    case '288':
+      result = process.env.BOBA_NETWORK_PROVIDER;
+      break;
     case '56':
       result = process.env.BSC_NETWORK_PROVIDER;
       break;
@@ -190,6 +226,15 @@ export const getProviderByChainId = (chainId: string) => {
       break;
     case '80001':
       result = process.env.MUMBAI_NETWORK_PROVIDER;
+      break;
+    case '1284':
+      result = process.env.MOONBEAM_NETWORK_PROVIDER;
+      break;
+    case '1285':
+      result = process.env.MOONRIVER_NETWORK_PROVIDER;
+      break;
+    case '1287':
+      result = process.env.MOONBASEALPHA_NETWORK_PROVIDER;
       break;
     case '250':
       result = process.env.FANTOM_NETWORK_PROVIDER;
@@ -265,6 +310,20 @@ export const getNetworkByChainId = (chainId: string) => {
         thumbnail: '/assets/images/ETH.jpg',
       };
       break;
+    case '28':
+      result = {
+        id: 28,
+        name: 'Boba Network Rinkeby Testnet',
+        thumbnail: '/assets/images/boba.png',
+      };
+      break;
+    case '288':
+      result = {
+        id: 288,
+        name: 'Boba Network',
+        thumbnail: '/assets/images/boba.png',
+      };
+      break;
     case '56':
       result = {
         id: 56,
@@ -305,6 +364,27 @@ export const getNetworkByChainId = (chainId: string) => {
         id: 4002,
         name: 'Fantom Testnet',
         thumbnail: '/assets/images/fantom.png',
+      };
+      break;
+    case '1284':
+      result = {
+        id: 1284,
+        name: 'Moonbeam',
+        thumbnail: '/assets/images/moonbeam.jpg',
+      };
+      break;
+    case '1285':
+      result = {
+        id: 1285,
+        name: 'Moonriver',
+        thumbnail: '/assets/images/moonriver.png',
+      };
+      break;
+    case '1287':
+      result = {
+        id: 1287,
+        name: 'Moonbase Alpha',
+        thumbnail: '/assets/images/moonbeam.png',
       };
       break;
     case '25':

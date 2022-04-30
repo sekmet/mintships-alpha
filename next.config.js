@@ -98,6 +98,9 @@ module.exports = withBundleAnalyzer({
     MOONBEAM_NETWORK_PROVIDER: getNetworkProviders(
       process.env.MOONBEAM_NETWORK_PROVIDER
     ),
+    MOONRIVER_NETWORK_PROVIDER: getNetworkProviders(
+      process.env.MOONRIVER_NETWORK_PROVIDER
+    ),
     BSCTESTNET_NETWORK_PROVIDER: getNetworkProviders(
       process.env.BSCTESTNET_NETWORK_PROVIDER
     ),

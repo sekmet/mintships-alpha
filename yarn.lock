@@ -1151,10 +1151,10 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.0.8.tgz#be3e914e84eacf16dbebd311c0d0b44aa1174c64"
   integrity sha512-ZK5v4bJwgXldAUA8r3q9YKfCwOqoHTK/ZqRjSeRXQrBXWouoPnS4MQtgC4AXGiiBuUu5wxrRgTlv0ktmM4P1Aw==
 
-"@sekmet/jazzicon@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@sekmet/jazzicon/-/jazzicon-2.0.1.tgz#489aafc4260b0c753866d60e2b2a5260d4d5e7cc"
-  integrity sha512-Sd26AqEsELJNEA9HU4c+hygEXIsgMsFld3g43hH62zalIMpn5uGGMrZ5OiM6kv9JMM+C7UyO5TJcFWOaActprg==
+"@sekmet/jazzicon@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@sekmet/jazzicon/-/jazzicon-2.0.2.tgz#7e02fbeb9a0d724890669497c83fa9f648a744be"
+  integrity sha512-moiRKsxvm0sEWJ8Qhs9rAT262CAKSn0L/tzE132bnvNhFfDQj5I9tFSLeRJlQ5FxaJoDJTQJsIMo8+LJZN/Zyw==
   dependencies:
     color "^3.1.3"
     mersenne-twister "^1.1.0"
@@ -1166,10 +1166,10 @@
   dependencies:
     tween-functions "^1.2.0"
 
-"@sekmet/react-ipfs-uploader@^1.3.31":
-  version "1.3.31"
-  resolved "https://registry.yarnpkg.com/@sekmet/react-ipfs-uploader/-/react-ipfs-uploader-1.3.31.tgz#16f7d1ead56cfad93bcdaf9fdf5d5db29978aa13"
-  integrity sha512-WSjMAHoXCT84vyrJPDngLgvkfuuUeRFi8IhJ+0Xqqemk/pFUAQjWYK8krwquHZKKjmMSswR8KC2as9mHy49JtQ==
+"@sekmet/react-ipfs-uploader@^1.3.32":
+  version "1.3.32"
+  resolved "https://registry.yarnpkg.com/@sekmet/react-ipfs-uploader/-/react-ipfs-uploader-1.3.32.tgz#be90184b16808c21681b550d92f5945faee11d6f"
+  integrity sha512-UAOHeQU12k+4GcWf4HDCHkSSXGeVUSSu4fqJZR0Fq3jjJRVii1Oj6Hyp2AGvzb+kiEmJ/xP7epzLFDPLkE9qZw==
   dependencies:
     i "^0.3.7"
     ipfs-http-client "^54.0.1"
@@ -1870,6 +1870,11 @@ bech32@1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/bech32/-/bech32-1.1.4.tgz#e38c9f37bf179b8eb16ae3a772b40c356d4832e9"
   integrity sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==
+
+bignumber.js@^9.0.2:
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.2.tgz#71c6c6bed38de64e24a65ebe16cfcf23ae693673"
+  integrity sha512-GAcQvbpsM0pUb0zw1EI0KhQEZ+lRwR5fYaAp3vPOYuP7aDvGy6cVN6XHLauvF8SOga2y0dcLcjt3iQDTSEliyw==
 
 bin-links@^3.0.0:
   version "3.0.1"

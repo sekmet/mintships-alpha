@@ -64,7 +64,7 @@ function Lock(props: any) {
   const { account } = useEthers();
   // const [getLockData, { data, loading }] = useLazyQuery(CURRENT_LOCK);
   const [datalock, setDatalock] = useState<any>();
-  const { lockid, lockmode } = props;
+  const { lockid, lockmode, bg } = props;
   let data: any;
   let loading: boolean = false;
 
@@ -100,6 +100,7 @@ function Lock(props: any) {
     return (
       <QrcodeLockPage
         {...props}
+        bg={bg}
         account={account}
         data={datalock}
         loading={loading}
@@ -111,6 +112,7 @@ function Lock(props: any) {
     return (
       <PaymentLockPage
         {...props}
+        bg={bg}
         account={account}
         data={datalock}
         loading={loading}
@@ -122,6 +124,7 @@ function Lock(props: any) {
     return (
       <RetweetLockPage
         {...props}
+        bg={bg}
         account={account}
         data={datalock}
         loading={loading}
@@ -132,6 +135,7 @@ function Lock(props: any) {
   return (
     <ContentLockPage
       {...props}
+      bg={bg}
       account={account}
       data={datalock}
       loading={loading}
@@ -140,7 +144,7 @@ function Lock(props: any) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { lockid } = context.query;
+  const { lockid, bg } = context.query;
   const decLockid = String(`${Base64.atob(String(lockid))}`.split('/')[1]);
   const lockId = parseInt(String(`${decLockid}`.split('-')[0]), 10);
   const lockMode = String(`${decLockid}`.split('-')[1]);
@@ -148,6 +152,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {
       lockid: lockId,
       lockmode: lockMode,
+      bg: bg || '',
     },
   };
 };

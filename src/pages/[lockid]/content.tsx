@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 
 // import { gql, useLazyQuery } from '@apollo/client';
 import { Interface } from '@ethersproject/abi';
-import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { Web3Provider } from '@ethersproject/providers';
 import Confetti from '@sekmet/react-confetti';
 import useWindowSize from '@sekmet/react-use/lib/useWindowSize';
 import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
+import BigNumber from 'bignumber.js';
 import * as ethers from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,6 +16,7 @@ import { Alert } from '@/components/Alerts';
 import Identicon from '@/components/Wallet/Identicon';
 import { Lock } from '@/layouts/Lock';
 import { Meta } from '@/layouts/Meta';
+import erc20abi from '@/lib/abis/erc20.json';
 import erc721abi from '@/lib/abis/erc721.json';
 import { dataReward } from '@/lib/dataLock';
 import { signText } from '@/utils/network';
@@ -55,10 +56,12 @@ const LockPage = (props: any) => {
   // const etherBalance = useEtherBalance(account);
   // const [chainId, setChainid] = useState<any>();
   // const router = useRouter();
-  const { data, loading } = props;
+  const { bg, data, loading } = props;
   // const [getLockReward, { data: reward }] = useLazyQuery(REWARD_UNLOCK);
 
-  const abi = new Interface(erc721abi);
+  const abi721 = new Interface(erc721abi);
+  const abi20 = new Interface(erc20abi);
+
   // This can be an address or an ENS name
   const address = data?.api_locks[0].contractAddress;
   const verifylockid = uuidv4();
@@ -72,14 +75,20 @@ const LockPage = (props: any) => {
 
   const signMessage = async (message: string) => {
     let erc721: any = {};
+    let erc20: any = {};
     setUnlocking(true);
 
     try {
       const result = await signText(message);
 
       if (result) {
-        if (address && abi && provider) {
-          erc721 = new Contract(address, abi, provider);
+        if (
+          address &&
+          abi721 &&
+          provider &&
+          data?.api_locks[0].lockType === 1
+        ) {
+          erc721 = new Contract(address, abi721, provider);
           // Get the token name
           const tokenName = await erc721.name();
           console.log('Token Name ===> ', tokenName);
@@ -95,13 +104,38 @@ const LockPage = (props: any) => {
           const tokenBalance = await erc721.balanceOf(account);
           // console.log('Token Balance: ', tokenBalance);
           if (tokenBalance) {
-            const tokenBalanceDec = BigNumber.from(tokenBalance).toNumber();
+            const tokenBalanceDec = new BigNumber(tokenBalance).toNumber();
             // console.log('Token Balance: ===> ', tokenBalanceDec);
             if (!tokenBalanceDec) {
               Alert(
                 'error',
                 'Permission Denied',
                 'You do not own this NFT in this account address you are connected, please try again using another address.'
+              );
+              setUnlocking(false);
+              return false;
+            }
+
+            dataReward(data?.api_locks[0].id).then((xreward: any) => {
+              setReward(xreward);
+              setUnlocked(xreward?.api_locks[0].cid);
+            });
+          }
+        }
+
+        if (address && abi20 && provider && data?.api_locks[0].lockType === 4) {
+          erc20 = new Contract(address, abi20, provider);
+          // Get the token balance
+          const tokenBalance = await erc20.balanceOf(account);
+          console.log('Token Balance: ', tokenBalance);
+          if (tokenBalance) {
+            const tokenBalanceDec = new BigNumber(tokenBalance).toNumber();
+            console.log('Token Balance: ===> ', tokenBalanceDec);
+            if (!tokenBalanceDec) {
+              Alert(
+                'error',
+                'Permission Denied',
+                'You do not own this Token in this account address you are connected, please try again using another address.'
               );
               setUnlocking(false);
               return false;
@@ -143,20 +177,8 @@ const LockPage = (props: any) => {
     }
   };
 
-  useEffect(() => {
-    if (signature && reward && reward?.api_locks[0].cid) {
-      setUnlocking(false);
-      setTimeout(() => {
-        window.location = reward.api_locks[0].cid;
-      }, 6000);
-    }
-  }, [signature, unlocked, reward]);
-
-  useEffect(() => {
-    // Connect to the Ethereum network
-    const providerEth = new Web3Provider(window.ethereum, 'any');
-    setProvider(providerEth);
-
+  const switchChain = async (chainId: number) => {
+    console.log('Chain ID: ', chainId);
     // Get the chain ID
     const allowedChainIds = [data?.api_locks[0].chainId];
 
@@ -181,6 +203,34 @@ const LockPage = (props: any) => {
     } else {
       setAllowedChainId(true);
     }
+  };
+
+  useEffect(() => {
+    if (signature && reward && reward?.api_locks[0].cid) {
+      setUnlocking(false);
+      setTimeout(() => {
+        window.location = reward.api_locks[0].cid;
+      }, 6000);
+    }
+  }, [signature, unlocked, reward]);
+
+  useEffect(() => {
+    // Connect to the Ethereum network
+    const providerEth = new Web3Provider(window.ethereum, 'any');
+    setProvider(providerEth);
+
+    // Get the chain ID
+    const allowedChainIds = [data?.api_locks[0].chainId];
+
+    /* eslint-disable no-underscore-dangle */
+    if (
+      window?.ethereum &&
+      !allowedChainIds.includes(parseInt(window.ethereum.networkVersion, 10))
+    ) {
+      setAllowedChainId(false);
+    } else {
+      setAllowedChainId(true);
+    }
 
     if (data && !loading) {
       setLock(data?.api_locks[0]);
@@ -188,8 +238,11 @@ const LockPage = (props: any) => {
   }, [data, loading, content]);
 
   return (
-    <Lock meta={<Meta title={lock?.name} description={lock?.description} />}>
-      {!isAllowedChainId && (
+    <Lock
+      bg={bg}
+      meta={<Meta title={lock?.name} description={lock?.description} />}
+    >
+      {!isAllowedChainId && lock?.chainId && (
         <div
           id="toast-warning"
           className="flex absolute top-0 right-0 z-50 items-center p-4 mt-3 mr-3 w-full max-w-xs text-white dark:text-gray-400 bg-orange-600 dark:bg-gray-800 rounded-lg shadow"
@@ -210,25 +263,29 @@ const LockPage = (props: any) => {
             </svg>
           </div>
           <div className="ml-3 text-sm font-bold">
-            Wrong network, please switch to the network chain {lock?.chainId}.
+            Please click to switch to the network chain {lock?.chainId} to
+            continue.
           </div>
           <button
             type="button"
-            className="inline-flex p-1.5 -m-1.5 ml-auto w-8 h-8 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-300"
+            onClick={() => switchChain(lock?.chainId)}
+            className="inline-flex p-1 -m-1 ml-auto w-8 h-8 text-gray-400 hover:text-green-600 dark:text-gray-500 dark:hover:text-white bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-300"
             data-dismiss-target="#toast-warning"
-            aria-label="Close"
+            aria-label="Switch"
           >
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Switch</span>
             <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
             >
               <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
               />
             </svg>
           </button>
@@ -323,8 +380,12 @@ const LockPage = (props: any) => {
                             {!signature && !unlocking && (
                               <div className="py-6 px-3 mt-0">
                                 <button
-                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-indigo-400 active:bg-indigo-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
+                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-600 active:bg-blue-600 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
                                   type="button"
+                                  disabled={
+                                    (!isAllowedChainId && lock?.chainId) ||
+                                    loading
+                                  }
                                   onClick={() => signMessage(messageToSign)}
                                 >
                                   Sign to Unlock
@@ -396,8 +457,12 @@ const LockPage = (props: any) => {
                           <div className="px-4 w-full">
                             <div className="py-6 px-3 mt-0">
                               <button
-                                className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-orange-400 active:bg-orange-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
+                                className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-600 active:bg-blue-600 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
                                 type="button"
+                                disabled={
+                                  (!isAllowedChainId && lock?.chainId) ||
+                                  loading
+                                }
                                 onClick={
                                   account
                                     ? () => {

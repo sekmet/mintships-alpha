@@ -23,6 +23,8 @@ import { Alert } from '@/components/Alerts';
 import NetworkDropdown from '@/components/Dropdowns/NetworkDropdown';
 import { Dashboard } from '@/layouts/Dashboard';
 import { Meta } from '@/layouts/Meta';
+import erc1155abi from '@/lib/abis/erc1155.json';
+import erc20abi from '@/lib/abis/erc20.json';
 import erc721abi from '@/lib/abis/erc721.json';
 import LOCKDETAILS from '@/services/graphql/lock.query';
 import UPDATELOCK from '@/services/graphql/updatelock.mutation';
@@ -42,7 +44,7 @@ const lockingTypes = [
     id: 1,
     title: 'NFT Ownership',
     description:
-      'Require a ownership of a particular (ERC721) NFT to unlock the content',
+      'Require a ownership of a particular (ERC721 or ERC1155) NFT to unlock the content',
   },
   {
     id: 2,
@@ -55,6 +57,12 @@ const lockingTypes = [
     title: 'Retweet to unlock',
     description:
       'Require a retweet of specific tweet in order to unlock the content',
+  },
+  {
+    id: 4,
+    title: 'Token Ownership',
+    description:
+      'Require a ownership of a particular (ERC20) token to unlock the content',
   },
 ];
 
@@ -166,6 +174,48 @@ const Index = (props: any) => {
     }
   };
 
+  const verifyTokenContract = async (
+    providerRpcUrl: string,
+    currentContractAddress: string
+  ) => {
+    if (currentContractAddress?.length === 42 && !contractVerified) {
+      setIsVerifying(true);
+      setContractVerified(true);
+      try {
+        let erc20: any = {};
+        const provider = await new JsonRpcProvider(providerRpcUrl);
+        const abi = new Interface(erc20abi);
+        // setValue('contractAddress', contractAddress);
+        // console.log('contractAddress', currentContractAddress, providerRpcUrl);
+        // This can be an address or an ENS name
+        const address = `${currentContractAddress}`.toLowerCase();
+        if (address && abi && provider) {
+          erc20 = await new Contract(address, abi, provider);
+          // Get the token name
+          const tokenName = await erc20.name();
+          const tokenSymbol = await erc20.symbol();
+          const tokenDecimals = await erc20.decimals();
+          const tokenSupply = await erc20.totalSupply();
+          // console.log('Token Symbol ===> ', tokenSymbol);
+          // console.log('Token Name ===> ', tokenName);
+          // console.log('Token Decimals ===> ', tokenDecimals);
+          // console.log('Total Supply ===> ', tokenSupply);
+          if (tokenName && tokenSymbol && tokenDecimals && tokenSupply) {
+            setContractName(tokenName);
+            setContractStatus(true);
+            setContractVerified(false);
+            setIsVerifying(false);
+          }
+        }
+      } catch (error) {
+        console.log('Error ===> ', error);
+        setContractStatus(false);
+        setContractVerified(false);
+        setIsVerifying(false);
+      }
+    }
+  };
+
   const verifyNftContract = async (
     providerRpcUrl: string,
     currentContractAddress: string
@@ -176,20 +226,58 @@ const Index = (props: any) => {
       try {
         let erc721: any = {};
         const provider = await new JsonRpcProvider(providerRpcUrl);
-        const abi = new Interface(erc721abi);
+        const abi721 = new Interface(erc721abi);
         // setValue('contractAddress', contractAddress);
         // console.log('contractAddress', currentContractAddress, providerRpcUrl);
         // This can be an address or an ENS name
         const address = `${currentContractAddress}`.toLowerCase();
-        if (address && abi && provider) {
-          erc721 = await new Contract(address, abi, provider);
+
+        if (address && abi721 && provider) {
+          erc721 = await new Contract(address, abi721, provider);
           // Get the token name
           const tokenName = await erc721.name();
-          // console.log('Token Name ===> ', tokenName);
-          setContractName(tokenName);
-          setContractStatus(true);
-          setContractVerified(false);
-          setIsVerifying(false);
+          const tokenExists = await erc721.ownerOf(1);
+          console.log('Token 721 Name ===> ', tokenName);
+          console.log('Token 721 info ===> ', tokenExists);
+          if (tokenName && tokenExists) {
+            setContractName(tokenName);
+            setContractStatus(true);
+            setContractVerified(false);
+            setIsVerifying(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.log('Error ===> ', error);
+        setContractStatus(false);
+        setContractVerified(false);
+        // setIsVerifying(false);
+      }
+
+      try {
+        let erc1155: any = {};
+        const provider = await new JsonRpcProvider(providerRpcUrl);
+        const abi1155 = new Interface(erc1155abi);
+        // This can be an address or an ENS name
+        const address = `${currentContractAddress}`.toLowerCase();
+
+        if (address && abi1155 && provider) {
+          erc1155 = await new Contract(address, abi1155, provider);
+          // Get the token name
+          const tokenName = await erc1155.name();
+          const tokenExists = await erc1155.balanceOf(
+            '0x6e603b75E422Db8cb5f98a62FA56D1638786bE83',
+            1
+          );
+          console.log('Token 1155 Name ===> ', tokenName);
+          console.log('Token 1155 info ===> ', tokenExists);
+          if (tokenName && tokenExists) {
+            setContractName(tokenName);
+            setContractStatus(true);
+            setContractVerified(false);
+            setIsVerifying(false);
+            return;
+          }
         }
       } catch (error) {
         console.log('Error ===> ', error);
@@ -272,7 +360,7 @@ const Index = (props: any) => {
     setFileUrl('');
   };
 
-  const watchContractAdress = watch('contractAddress'); // you can supply default value as second argument
+  watch('contractAddress'); // you can supply default value as second argument
 
   useEffect(() => {
     const fetchData = async () => {
@@ -296,7 +384,15 @@ const Index = (props: any) => {
     if (!contractAddress)
       setValue('contractAddress', datalock?.api_locks_by_pk?.contractAddress);
     setValue('tokenId', datalock?.api_locks_by_pk?.tokenId);
-    setValue('lockType', selectedLockingTypes);
+    if (selectedLockingTypes) setValue('lockType', selectedLockingTypes);
+    else
+      setValue(
+        'lockType',
+        Number(
+          lockingTypes[parseInt(datalock?.api_locks_by_pk?.lockType, 10) - 1]
+            ?.id
+        )
+      );
     setValue('walletAddress', datalock?.api_locks_by_pk?.walletAddress);
     setValue(
       'paymentUnlockAmount',
@@ -311,6 +407,51 @@ const Index = (props: any) => {
     setValue('timeoutHours', datalock?.api_locks_by_pk?.timeoutHours);
     setValue('status', datalock?.api_locks_by_pk?.status);
   }, [loading, ipfsThumbUrl, thumbnailUrl]);
+
+  useEffect(() => {
+    const lockTypeSelection = async () => {
+      if (selectedLockingTypes?.id && !contractVerified) {
+        setSelectedLockingTypes(
+          lockingTypes[parseInt(selectedLockingTypes?.id, 10) - 1]
+        );
+        // console.log('selectedLockingTypes?.id',contractAddress,datalock?.api_locks_by_pk?.contractAddress, selectedLockingTypes?.id, NETWORK_PROVIDER);
+
+        const NETWORK_PROVIDER = getRandomElement(
+          chainId
+            ? getProviderByChainId(String(chainId))
+            : getProviderByChainId(String(datalock?.api_locks_by_pk?.chainId))
+        );
+        if (
+          (contractAddress || datalock?.api_locks_by_pk?.contractAddress) &&
+          selectedLockingTypes.id === 1
+        ) {
+          await verifyNftContract(
+            NETWORK_PROVIDER,
+            String(
+              contractAddress || datalock?.api_locks_by_pk?.contractAddress
+            )
+          );
+        }
+
+        if (
+          (contractAddress || datalock?.api_locks_by_pk?.contractAddress) &&
+          selectedLockingTypes.id === 4
+        ) {
+          await verifyTokenContract(
+            NETWORK_PROVIDER,
+            String(
+              contractAddress || datalock?.api_locks_by_pk?.contractAddress
+            )
+          );
+        }
+      } else {
+        setSelectedLockingTypes(
+          lockingTypes[parseInt(datalock?.api_locks_by_pk?.lockType, 10) - 1]
+        );
+      }
+    };
+    lockTypeSelection();
+  }, [selectedLockingTypes]);
 
   /* useEffect(() => {
     if (!loading && !chainId) {
@@ -329,7 +470,7 @@ const Index = (props: any) => {
     const subscription = watch(async (value, { name, type }) => {
       // console.log(contractVerified, watchContractAdress, value, name, type);
       if (name === 'contractAddress' && type === 'change') {
-        if (watchContractAdress && value && !contractVerified) {
+        if (value && !contractVerified) {
           const NETWORK_PROVIDER = getRandomElement(
             !chainId
               ? getProviderByChainId(String(datalock?.api_locks_by_pk?.chainId))
@@ -342,10 +483,19 @@ const Index = (props: any) => {
             value?.contractAddress
           ); */
           setContractAddress(String(value.contractAddress));
-          await verifyNftContract(
-            NETWORK_PROVIDER,
-            String(value?.contractAddress)
-          );
+          if (selectedLockingTypes.id === 1) {
+            await verifyNftContract(
+              NETWORK_PROVIDER,
+              String(value?.contractAddress)
+            );
+          }
+
+          if (selectedLockingTypes.id === 4) {
+            await verifyTokenContract(
+              NETWORK_PROVIDER,
+              String(value?.contractAddress)
+            );
+          }
         }
       }
     });
@@ -654,7 +804,10 @@ const Index = (props: any) => {
                               defaultValue={
                                 datalock?.api_locks_by_pk?.paymentUnlockAmount
                               }
-                              {...register('paymentUnlockAmount')}
+                              {...register('paymentUnlockAmount', {
+                                required: true,
+                                min: 0.001,
+                              })}
                               id="paymentUnlockAmount"
                               className="p-3 w-full text-sm font-bold bg-white rounded border-0 focus:outline-none focus:ring shadow transition-all duration-150 ease-linear placeholder:text-blueGray-300 text-blueGray-600"
                               placeholder="0.000"
@@ -739,7 +892,7 @@ const Index = (props: any) => {
                     </label>
                     <input
                       defaultValue={datalock?.api_locks_by_pk?.contractAddress}
-                      {...register('contractAddress', { required: true })}
+                      {...register('contractAddress')}
                       type="text"
                       className="p-3 w-full text-sm bg-white rounded border-0 focus:outline-none focus:ring shadow transition-all duration-150 ease-linear placeholder:text-blueGray-300 text-blueGray-600"
                       placeholder="0x0000000000000000000000000000000000000000"
@@ -778,7 +931,9 @@ const Index = (props: any) => {
                       <span className="flex flex-wrap mt-2 text-xs font-bold text-red-600 align-middle">
                         <BanIcon className="w-5 h-5" aria-hidden="true" />{' '}
                         <span className="mt-1">
-                          Not valid ERC721 or ERC1155 NFT Contract!
+                          {selectedLockingTypes?.id === 1
+                            ? 'Not valid ERC721 or ERC1155 NFT Contract!'
+                            : 'Not valid ERC20 Contract!'}
                         </span>
                       </span>
                     )}
@@ -791,9 +946,13 @@ const Index = (props: any) => {
                         <span className="mt-1">
                           Valid [
                           <span className="text-green-900">
-                            {contractName || 'ERC721 or ERC1155'}
+                            {contractName ||
+                              (selectedLockingTypes?.id === 1
+                                ? 'ERC721 or ERC1155'
+                                : 'ERC20')}
                           </span>
-                          ] NFT Contract!
+                          ] {selectedLockingTypes?.id === 1 ? 'NFT' : 'Token'}{' '}
+                          Contract!
                         </span>
                       </span>
                     )}
@@ -816,13 +975,22 @@ const Index = (props: any) => {
                           : String(datalock?.api_locks_by_pk?.chainId)
                       }
                       setChainId={setChainId}
-                      verifyContract={async (NETWORK_PROVIDER: string) =>
-                        verifyNftContract(
-                          NETWORK_PROVIDER,
-                          contractAddress ||
-                            datalock?.api_locks_by_pk?.contractAddress
-                        )
-                      }
+                      verifyContract={async (NETWORK_PROVIDER: string) => {
+                        if (selectedLockingTypes?.id === 1) {
+                          verifyNftContract(
+                            NETWORK_PROVIDER,
+                            contractAddress ||
+                              datalock?.api_locks_by_pk?.contractAddress
+                          );
+                        }
+                        if (selectedLockingTypes?.id === 4) {
+                          verifyTokenContract(
+                            NETWORK_PROVIDER,
+                            contractAddress ||
+                              datalock?.api_locks_by_pk?.contractAddress
+                          );
+                        }
+                      }}
                     />
                   )}
                 </div>
@@ -1027,6 +1195,13 @@ const Index = (props: any) => {
                 </div>
               </div>
               <div className="text-right">
+                <button
+                  className="py-2 px-10 mr-3 text-lg font-bold text-white uppercase bg-red-700 active:bg-red-600 rounded outline-none focus:outline-none shadow hover:shadow-md transition-all duration-150 ease-linear"
+                  type="reset"
+                  onClick={() => router.push('/')}
+                >
+                  Cancel
+                </button>
                 <button
                   className="py-2 px-10 text-lg font-bold text-white uppercase bg-green-700 active:bg-green-600 rounded outline-none focus:outline-none shadow hover:shadow-md transition-all duration-150 ease-linear"
                   type="submit"

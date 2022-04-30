@@ -43,6 +43,26 @@ const networksAvailble = [
     thumbnail: '/assets/images/binance.jpg',
   },
   {
+    id: 80001,
+    name: 'Polygon Mumbai',
+    thumbnail: '/assets/images/POLYGON.jpg',
+  },
+  {
+    id: 137,
+    name: 'Polygon Mainnet',
+    thumbnail: '/assets/images/POLYGON.jpg',
+  },
+  {
+    id: 1666600000,
+    name: 'Harmony S0',
+    thumbnail: '/assets/images/harmony.jpg',
+  },
+  {
+    id: 1666700000,
+    name: 'Harmony Testnet S0',
+    thumbnail: '/assets/images/harmony.jpg',
+  },
+  {
     id: 25,
     name: 'Cronos Mainnet Beta',
     thumbnail: '/assets/images/cronos.png',
@@ -51,6 +71,21 @@ const networksAvailble = [
     id: 338,
     name: 'Cronos Testnet',
     thumbnail: '/assets/images/cronos.png',
+  },
+  {
+    id: 1284,
+    name: 'Moonbeam',
+    thumbnail: '/assets/images/moonbeam.png',
+  },
+  {
+    id: 1287,
+    name: 'Moonbase Alpha',
+    thumbnail: '/assets/images/moonbeam.png',
+  },
+  {
+    id: 1285,
+    name: 'Moonriver',
+    thumbnail: '/assets/images/moonriver.png',
   },
   {
     id: 250,
@@ -73,26 +108,6 @@ const networksAvailble = [
     thumbnail: '/assets/images/avax.png',
   },
   {
-    id: 80001,
-    name: 'Polygon Mumbai',
-    thumbnail: '/assets/images/POLYGON.jpg',
-  },
-  {
-    id: 137,
-    name: 'Polygon Mainnet',
-    thumbnail: '/assets/images/POLYGON.jpg',
-  },
-  {
-    id: 1666600000,
-    name: 'Harmony S0',
-    thumbnail: '/assets/images/harmony.jpg',
-  },
-  {
-    id: 1666700000,
-    name: 'Harmony Testnet S0',
-    thumbnail: '/assets/images/harmony.jpg',
-  },
-  {
     id: 1313161554,
     name: 'Aurora',
     thumbnail: '/assets/images/aurora.jpg',
@@ -101,6 +116,16 @@ const networksAvailble = [
     id: 1313161555,
     name: 'Aurora Testnet',
     thumbnail: '/assets/images/aurora.jpg',
+  },
+  {
+    id: 28,
+    name: 'Boba Network Rinkeby Testnet',
+    thumbnail: '/assets/images/boba.png',
+  },
+  {
+    id: 288,
+    name: 'Boba Network',
+    thumbnail: '/assets/images/boba.png',
   },
 ];
 

@@ -51,7 +51,7 @@ const LockPage = (props: any) => {
   // const etherBalance = useEtherBalance(account);
   // const [chainId, setChainid] = useState<any>();
   // const router = useRouter();
-  const { data, loading } = props;
+  const { bg, data, loading } = props;
   // const [getLockReward, { data: reward }] = useLazyQuery(REWARD_UNLOCK);
 
   // const abi = new Interface(erc721abi);
@@ -190,12 +190,12 @@ const LockPage = (props: any) => {
         // Alert('success', 'Congratulations...', 'Item minted with success...');
         // console.log(response);
         const { data: apidata } = response;
-        console.log(apidata, apidata.status);
+        // console.log(apidata, apidata.status);
         if (apidata.status === true) {
           const { tweet } = apidata;
-          console.log(tweet.text);
+          // console.log(tweet.text);
           const result = stringSimilarity(tweet.text, retweet);
-          console.log(result);
+          // console.log(result);
           if (result > 0.63) {
             // Alert('success', 'Congratulations...', 'Item minted with success...');
             // setUnlocked(data?.api_locks[0].cid);
@@ -221,18 +221,8 @@ const LockPage = (props: any) => {
       });
   };
 
-  useEffect(() => {
-    if (signature && reward && reward?.api_locks[0].cid) {
-      window.location = reward.api_locks[0].cid;
-      setUnlocking(false);
-    }
-  }, [signature, unlocked, reward]);
-
-  useEffect(() => {
-    // Connect to the Ethereum network
-    // const providerEth = new Web3Provider(window.ethereum, 'any');
-    // setProvider(providerEth);
-
+  const switchChain = async (chainId: number) => {
+    console.log('Chain ID: ', chainId);
     // Get the chain ID
     const allowedChainIds = [data?.api_locks[0].chainId];
 
@@ -257,6 +247,32 @@ const LockPage = (props: any) => {
     } else {
       setAllowedChainId(true);
     }
+  };
+
+  useEffect(() => {
+    if (signature && reward && reward?.api_locks[0].cid) {
+      window.location = reward.api_locks[0].cid;
+      setUnlocking(false);
+    }
+  }, [signature, unlocked, reward]);
+
+  useEffect(() => {
+    // Connect to the Ethereum network
+    // const providerEth = new Web3Provider(window.ethereum, 'any');
+    // setProvider(providerEth);
+
+    // Get the chain ID
+    const allowedChainIds = [data?.api_locks[0].chainId];
+
+    /* eslint-disable no-underscore-dangle */
+    if (
+      window?.ethereum &&
+      !allowedChainIds.includes(parseInt(window.ethereum.networkVersion, 10))
+    ) {
+      setAllowedChainId(false);
+    } else {
+      setAllowedChainId(true);
+    }
 
     if (data && !loading) {
       setLock(data?.api_locks[0]);
@@ -264,7 +280,60 @@ const LockPage = (props: any) => {
   }, [data, loading]);
 
   return (
-    <Lock meta={<Meta title={lock?.name} description={lock?.description} />}>
+    <Lock
+      bg={bg}
+      meta={<Meta title={lock?.name} description={lock?.description} />}
+    >
+      {!isAllowedChainId && lock?.chainId && (
+        <div
+          id="toast-warning"
+          className="flex absolute top-0 right-0 z-50 items-center p-4 mt-3 mr-3 w-full max-w-xs text-white dark:text-gray-400 bg-orange-600 dark:bg-gray-800 rounded-lg shadow"
+          role="alert"
+        >
+          <div className="inline-flex shrink-0 justify-center items-center w-8 h-8 text-orange-500 dark:text-orange-200 bg-orange-200 dark:bg-orange-700 rounded-lg">
+            <svg
+              className="w-10 h-10"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="ml-3 text-sm font-bold">
+            Please click to switch to the network chain {lock?.chainId} to
+            continue.
+          </div>
+          <button
+            type="button"
+            onClick={() => switchChain(lock?.chainId)}
+            className="inline-flex p-1 -m-1 ml-auto w-8 h-8 text-gray-400 hover:text-green-600 dark:text-gray-500 dark:hover:text-white bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-300"
+            data-dismiss-target="#toast-warning"
+            aria-label="Switch"
+          >
+            <span className="sr-only">Switch</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {loading || !lock ? (
         <div
           id="loading-screen"
@@ -355,6 +424,10 @@ const LockPage = (props: any) => {
                                 <button
                                   className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-500 active:bg-blue-500 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
                                   type="button"
+                                  disabled={
+                                    (!isAllowedChainId && lock?.chainId) ||
+                                    loading
+                                  }
                                   onClick={(e) =>
                                     sendTweet(e, lock?.tweetUnlock)
                                   }
@@ -384,6 +457,10 @@ const LockPage = (props: any) => {
                                 <button
                                   className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-500 active:bg-blue-500 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
                                   type="button"
+                                  disabled={
+                                    (!isAllowedChainId && lock?.chainId) ||
+                                    loading
+                                  }
                                   onClick={(e) =>
                                     verifyTweet(
                                       e,
@@ -457,7 +534,7 @@ const LockPage = (props: any) => {
                           <div className="px-4 w-full">
                             <div className="py-6 px-3 mt-0">
                               <button
-                                className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-orange-400 active:bg-orange-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
+                                className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-600 active:bg-blue-600 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
                                 type="button"
                                 onClick={
                                   account

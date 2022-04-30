@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 // import { gql, useLazyQuery } from '@apollo/client';
 import { Web3Provider } from '@ethersproject/providers';
+import Confetti from '@sekmet/react-confetti';
+import useWindowSize from '@sekmet/react-use/lib/useWindowSize';
 import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import * as ethers from 'ethers';
@@ -39,15 +41,17 @@ const LockPage = (props: any) => {
   // const [content, setContent] = useState<string | boolean>(false);
   const [signature, setSignature] = useState<string | boolean>(false);
   const [unlocking, setUnlocking] = useState<boolean>(false);
+  const [confirming, setConfirming] = useState<boolean>(false);
   const [unlocked, setUnlocked] = useState<string | boolean>(false);
   const [reward, setReward] = useState<any | boolean>(false);
   // const [fileExt, setFileExt] = useState("png");
   // const ref = useRef<any>();
   const { activateBrowserWallet, account } = useEthers();
+  const { width, height } = useWindowSize();
   // const etherBalance = useEtherBalance(account);
   // const [chainId, setChainid] = useState<any>();
   // const router = useRouter();
-  const { data, loading } = props;
+  const { bg, data, loading } = props;
   // const [getLockReward, { data: reward }] = useLazyQuery(REWARD_UNLOCK);
 
   // const abi = new Interface(erc721abi);
@@ -136,6 +140,7 @@ const LockPage = (props: any) => {
   }; */
 
   const payToUnlock = async (to: string, amount: string) => {
+    setConfirming(true);
     setUnlocking(true);
     const providerPay = new ethers.providers.Web3Provider(
       window.ethereum,
@@ -157,49 +162,51 @@ const LockPage = (props: any) => {
     };
 
     try {
-      signerPay.sendTransaction(tx).then((transaction) => {
-        console.dir(transaction);
-        transaction.wait(3).then((receipt): any => {
-          console.dir(receipt);
-          // alert("Payment sent!");
-          setUnlocking(false);
-          if (!receipt) {
-            Alert(
-              'error',
-              'Permission Denied',
-              'You do not own this NFT in this account address you are connected, please try again using another address.'
-            );
-            setUnlocking(false);
-            return false;
-          }
-
-          setSignature(JSON.stringify(receipt));
-
-          return dataReward(data?.api_locks[0].id).then((xreward: any) => {
-            setReward(xreward);
-            setUnlocked(xreward?.api_locks[0].cid);
+      signerPay
+        .sendTransaction(tx)
+        .then((transaction) => {
+          transaction.wait().then(() => {
+            setConfirming(false);
+            setUnlocking(true);
           });
+          transaction.wait(3).then((receipt): any => {
+            // alert("Payment sent!");
+            setUnlocking(false);
+            if (!receipt) {
+              Alert(
+                'error',
+                'Permission Denied',
+                'You do not own this NFT in this account address you are connected, please try again using another address.'
+              );
+              setUnlocking(false);
+              setConfirming(false);
+              return false;
+            }
+
+            setSignature(JSON.stringify(receipt));
+
+            return dataReward(data?.api_locks[0].id).then((xreward: any) => {
+              setReward(xreward);
+              setUnlocked(xreward?.api_locks[0].cid);
+            });
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          setUnlocking(false);
+          setConfirming(false);
+          return false;
         });
-      });
     } catch (error) {
       console.log(error);
       setUnlocking(false);
+      setConfirming(false);
     }
   };
 
-  useEffect(() => {
-    if (signature && reward && reward?.api_locks[0].cid) {
-      window.location = reward.api_locks[0].cid;
-      setUnlocking(false);
-    }
-  }, [signature, unlocked, reward]);
-
-  useEffect(() => {
-    // Connect to the Ethereum network
-    const providerEth = new Web3Provider(window.ethereum, 'any');
-    setProvider(providerEth);
-
+  const switchChain = async (chainId: number) => {
     // Get the chain ID
+    console.log('Chain ID: ', chainId);
     const allowedChainIds = [data?.api_locks[0].chainId];
 
     /* eslint-disable no-underscore-dangle */
@@ -223,17 +230,48 @@ const LockPage = (props: any) => {
     } else {
       setAllowedChainId(true);
     }
+  };
+
+  useEffect(() => {
+    if (signature && reward && reward?.api_locks[0].cid) {
+      setUnlocking(false);
+      setTimeout(() => {
+        window.location = reward.api_locks[0].cid;
+      }, 6000);
+    }
+  }, [signature, unlocked, reward]);
+
+  useEffect(() => {
+    // Connect to the Ethereum network
+    const providerEth = new Web3Provider(window.ethereum, 'any');
+    setProvider(providerEth);
+
+    // Get the chain ID
+    const allowedChainIds = [data?.api_locks[0].chainId];
+
+    /* eslint-disable no-underscore-dangle */
+    if (
+      window?.ethereum &&
+      !allowedChainIds.includes(parseInt(window.ethereum.networkVersion, 10))
+    ) {
+      setAllowedChainId(false);
+    } else {
+      setAllowedChainId(true);
+    }
 
     if (data && !loading) {
       setLock(data?.api_locks[0]);
     }
   }, [data, loading]);
 
-  console.log(lock);
+  // console.log(lock);
 
   return (
-    <Lock meta={<Meta title={lock?.name} description={lock?.description} />}>
-      {!isAllowedChainId && (
+    <Lock
+      bg={bg}
+      meta={<Meta title={lock?.name} description={lock?.description} />}
+    >
+      {!isAllowedChainId && lock?.chainId && (
         <div
           id="toast-warning"
           className="flex absolute top-0 right-0 z-50 items-center p-4 mt-3 mr-3 w-full max-w-xs text-white dark:text-gray-400 bg-orange-600 dark:bg-gray-800 rounded-lg shadow"
@@ -254,25 +292,29 @@ const LockPage = (props: any) => {
             </svg>
           </div>
           <div className="ml-3 text-sm font-bold">
-            Wrong network, please switch to the network chain {lock?.chainId}.
+            Please click to switch to the network chain {lock?.chainId} to
+            continue.
           </div>
           <button
             type="button"
-            className="inline-flex p-1.5 -m-1.5 ml-auto w-8 h-8 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-300"
+            onClick={() => switchChain(lock?.chainId)}
+            className="inline-flex p-1 -m-1 ml-auto w-8 h-8 text-gray-400 hover:text-green-600 dark:text-gray-500 dark:hover:text-white bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg focus:ring-2 focus:ring-gray-300"
             data-dismiss-target="#toast-warning"
-            aria-label="Close"
+            aria-label="Switch"
           >
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Switch</span>
             <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
             >
               <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
               />
             </svg>
           </button>
@@ -369,6 +411,10 @@ const LockPage = (props: any) => {
                                 <button
                                   className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-600 active:bg-blue-600 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out sm:mr-2 sm:text-xl text-md"
                                   type="button"
+                                  disabled={
+                                    (!isAllowedChainId && lock?.chainId) ||
+                                    loading
+                                  }
                                   onClick={async () =>
                                     payToUnlock(
                                       lock?.walletAddress,
@@ -386,7 +432,11 @@ const LockPage = (props: any) => {
                             {!signature && unlocking && (
                               <div className="py-6 px-3 mt-0">
                                 <button
-                                  className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-red-400 active:bg-red-900 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out cursor-not-allowed sm:mr-2 sm:text-xl text-md"
+                                  className={`inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase ${
+                                    confirming
+                                      ? 'bg-orange-600 active:bg-orange-900'
+                                      : 'bg-red-400 active:bg-red-900'
+                                  } rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition duration-150 ease-in-out cursor-not-allowed sm:mr-2 sm:text-xl text-md`}
                                   type="button"
                                   disabled={true}
                                 >
@@ -410,7 +460,9 @@ const LockPage = (props: any) => {
                                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                     />
                                   </svg>
-                                  Unlocking...
+                                  {confirming
+                                    ? 'Confirming...'
+                                    : 'Unlocking...'}
                                 </button>
                               </div>
                             )}
@@ -441,6 +493,10 @@ const LockPage = (props: any) => {
                               <button
                                 className="inline-flex items-center py-2 px-12 mb-1 font-bold text-white uppercase bg-gray-400 hover:bg-blue-600 active:bg-blue-600 rounded-full outline-none focus:outline-none shadow hover:shadow-lg transition-all duration-300 ease-linear sm:mr-2 sm:text-xl text-md"
                                 type="button"
+                                disabled={
+                                  (!isAllowedChainId && lock?.chainId) ||
+                                  loading
+                                }
                                 onClick={
                                   account
                                     ? () => {
@@ -467,6 +523,14 @@ const LockPage = (props: any) => {
               </div>
             </div>
           </div>
+          {!unlocking && signature && reward && (
+            <Confetti
+              width={width}
+              height={height}
+              initialVelocityY={30}
+              gravity={0.6}
+            />
+          )}
         </div>
       )}
     </Lock>
