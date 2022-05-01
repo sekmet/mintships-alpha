@@ -8,7 +8,6 @@ import Confetti from '@sekmet/react-confetti';
 import useWindowSize from '@sekmet/react-use/lib/useWindowSize';
 import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
-import BigNumber from 'bignumber.js';
 import * as ethers from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -104,7 +103,9 @@ const LockPage = (props: any) => {
           const tokenBalance = await erc721.balanceOf(account);
           // console.log('Token Balance: ', tokenBalance);
           if (tokenBalance) {
-            const tokenBalanceDec = new BigNumber(tokenBalance).toNumber();
+            const tokenBalanceDec = Number(
+              ethers.utils.formatEther(tokenBalance)
+            );
             // console.log('Token Balance: ===> ', tokenBalanceDec);
             if (!tokenBalanceDec) {
               Alert(
@@ -127,10 +128,12 @@ const LockPage = (props: any) => {
           erc20 = new Contract(address, abi20, provider);
           // Get the token balance
           const tokenBalance = await erc20.balanceOf(account);
-          console.log('Token Balance: ', tokenBalance);
+          // console.log('Token Balance: ', tokenBalance);
           if (tokenBalance) {
-            const tokenBalanceDec = new BigNumber(tokenBalance).toNumber();
-            console.log('Token Balance: ===> ', tokenBalanceDec);
+            const tokenBalanceDec = Number(
+              ethers.utils.formatEther(tokenBalance)
+            );
+            // console.log('Token Balance: ===> ', tokenBalanceDec);
             if (!tokenBalanceDec) {
               Alert(
                 'error',

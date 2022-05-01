@@ -6,7 +6,6 @@ import { Web3Provider } from '@ethersproject/providers';
 import QRCodeStyling from '@solana/qr-code-styling';
 import { useEthers } from '@usedappify/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
-import BigNumber from 'bignumber.js';
 import * as ethers from 'ethers';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -86,19 +85,21 @@ const LockPage = (props: any) => {
           data?.api_locks[0].lockType === 1
         ) {
           erc721 = new Contract(address, abi721, provider);
-          erc721.currentTokenId().then(function (resultToken: any) {
-            console.log('Token ID ===> ', resultToken);
-            // if (resultToken) {
-            //  const resultPlus = BigNumber.from(resultToken).toNumber() + 1;
-            // console.log('Token ID dec + 1 ===> ', resultPlus);
-            // }
-          });
+          // erc721.currentTokenId().then(function (resultToken: any) {
+          // console.log('Token ID ===> ', resultToken);
+          // if (resultToken) {
+          //  const resultPlus = BigNumber.from(resultToken).toNumber() + 1;
+          // console.log('Token ID dec + 1 ===> ', resultPlus);
+          // }
+          // });
 
           // Get the token balance
           const tokenBalance = await erc721.balanceOf(account);
           // console.log('Token Balance: ', tokenBalance);
           if (tokenBalance) {
-            const tokenBalanceDec = new BigNumber(tokenBalance).toNumber();
+            const tokenBalanceDec = Number(
+              ethers.utils.formatEther(tokenBalance)
+            );
             // console.log('Token Balance: ===> ', tokenBalanceDec);
             if (!tokenBalanceDec) {
               Alert(
@@ -118,8 +119,10 @@ const LockPage = (props: any) => {
           const tokenBalance = await erc20.balanceOf(account);
           console.log('Token Balance: ', tokenBalance);
           if (tokenBalance) {
-            const tokenBalanceDec = new BigNumber(tokenBalance).toNumber();
-            console.log('Token Balance: ===> ', tokenBalanceDec);
+            const tokenBalanceDec = Number(
+              ethers.utils.formatEther(tokenBalance)
+            );
+            // console.log('Token Balance: ===> ', tokenBalanceDec);
             if (!tokenBalanceDec) {
               Alert(
                 'error',
