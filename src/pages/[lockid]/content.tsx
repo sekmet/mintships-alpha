@@ -90,19 +90,19 @@ const LockPage = (props: any) => {
           erc721 = new Contract(address, abi721, provider);
           // Get the token name
           const tokenName = await erc721.name();
-          console.log('Token Name ===> ', tokenName);
-          erc721.currentTokenId().then(function (resultToken: any) {
-            console.log('Token ID ===> ', resultToken);
-            // if (resultToken) {
-            //  const resultPlus = BigNumber.from(resultToken).toNumber() + 1;
-            //  console.log('Token ID dec + 1 ===> ', resultPlus);
-            // }
-          });
+          // console.log('Token Name ===> ', tokenName);
+          // erc721.currentTokenId().then(function (resultToken: any) {
+          // console.log('Token ID ===> ', resultToken);
+          // if (resultToken) {
+          //  const resultPlus = BigNumber.from(resultToken).toNumber() + 1;
+          //  console.log('Token ID dec + 1 ===> ', resultPlus);
+          // }
+          // });
 
           // Get the token balance
           const tokenBalance = await erc721.balanceOf(account);
           // console.log('Token Balance: ', tokenBalance);
-          if (tokenBalance) {
+          if (tokenBalance && tokenName) {
             const tokenBalanceDec = Number(
               ethers.utils.formatEther(tokenBalance)
             );
